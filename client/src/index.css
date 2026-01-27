@@ -8,34 +8,51 @@
   --font-sans: 'Inter', sans-serif;
   --font-display: 'Outfit', sans-serif;
 
-  /* Deep, trustworthy blue palette for B2B SaaS */
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
+  /* STAQ Teal color palette */
+  --background: 180 20% 98%;
+  --foreground: 192 30% 15%;
 
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 192 30% 15%;
+  --card-border: 187 25% 88%;
   
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover-foreground: 192 30% 15%;
+  --popover-border: 187 25% 88%;
 
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 187 55% 52%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222 47% 11.2%;
+  --secondary: 187 30% 94%;
+  --secondary-foreground: 192 30% 20%;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted: 187 20% 95%;
+  --muted-foreground: 192 15% 45%;
 
-  --accent: 262 83% 58%;
-  --accent-foreground: 210 40% 98%;
+  --accent: 184 60% 45%;
+  --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
+  --border: 187 25% 88%;
+  --input: 187 25% 88%;
+  --ring: 187 55% 52%;
+
+  --sidebar: 192 25% 97%;
+  --sidebar-foreground: 192 30% 15%;
+  --sidebar-border: 187 25% 88%;
+  --sidebar-primary: 187 55% 52%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 187 30% 92%;
+  --sidebar-accent-foreground: 192 30% 20%;
+  --sidebar-ring: 187 55% 52%;
+
+  --chart-1: 187 55% 52%;
+  --chart-2: 184 60% 45%;
+  --chart-3: 190 50% 60%;
+  --chart-4: 182 45% 40%;
+  --chart-5: 195 40% 35%;
   
   --radius: 0.75rem;
 }

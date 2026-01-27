@@ -1,7 +1,7 @@
 import { useStartChat } from "@/hooks/use-chat";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Layers, BarChart3, ShieldCheck } from "lucide-react";
+import { ArrowRight, BarChart3, ShieldCheck, Layers } from "lucide-react";
 import { useState } from "react";
 
 export default function LandingPage() {
@@ -27,11 +27,11 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-white to-blue-50/30 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-background via-white to-primary/5 flex flex-col">
       {/* Navigation */}
       <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-        <div className="flex items-center gap-2 font-display font-bold text-2xl text-primary">
-          <Layers className="w-8 h-8 text-accent" />
+        <div className="flex items-center gap-3 font-display font-bold text-2xl text-primary">
+          <img src="/images/staq-logo.png" alt="STAQ" className="w-10 h-10" />
           STAQ<span className="text-foreground/80 font-medium">Audit</span>
         </div>
         <button 
