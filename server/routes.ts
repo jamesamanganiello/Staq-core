@@ -148,7 +148,7 @@ export async function registerRoutes(
   app.post(api.chat.message.path, async (req, res) => {
     try {
       const { message } = api.chat.message.input.parse(req.body);
-      const { sessionId } = req.params;
+      const sessionId = req.params.sessionId as string;
 
       const conversation = await storage.getConversationBySessionId(sessionId);
       if (!conversation) {
@@ -251,7 +251,7 @@ export async function registerRoutes(
 
   // Get conversation history
   app.get(api.chat.history.path, async (req, res) => {
-    const { sessionId } = req.params;
+    const sessionId = req.params.sessionId as string;
     const conversation = await storage.getConversationBySessionId(sessionId);
     if (!conversation) {
       return res.status(404).json({ message: "Session not found" });
