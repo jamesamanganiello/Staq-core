@@ -51,8 +51,8 @@ export default function ChatPage() {
   };
 
   // Derived state
-  const isCompleted = historyData?.conversation.isComplete || false;
-  const summary = historyData?.conversation.summary as any;
+  const isCompleted = historyData?.conversation.status === "completed";
+  const extractedData = historyData?.conversation.extractedData as any;
   const messages = historyData?.messages || [];
 
   if (isLoading) {
@@ -124,8 +124,8 @@ export default function ChatPage() {
             )}
 
             {/* Audit Report */}
-            {isCompleted && summary && (
-              <AuditReport data={summary} />
+            {isCompleted && extractedData && (
+              <AuditReport data={extractedData} />
             )}
 
             <div ref={messagesEndRef} className="h-4" />

@@ -6,11 +6,22 @@ import { z } from "zod";
 // === TABLE DEFINITIONS ===
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
-  sessionId: text("session_id").notNull().unique(), // UUID for frontend reference
-  customerInfo: jsonb("customer_info"), // { name, email, company, website }
-  summary: jsonb("summary"), // The final analysis from Claude
-  isComplete: boolean("is_complete").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
+  sessionId: text("session_id").notNull().unique(),
+  
+  // Customer info collected during conversation
+  name: text("name"),
+  email: text("email"),
+  companyName: text("company_name"),
+  companyUrl: text("company_url"),
+  
+  // Conversation data
+  conversationLog: jsonb("conversation_log").$type<Array<{role: string, content: string}>>(),
+  extractedData: jsonb("extracted_data"), // Claude's final JSON output
+  
+  // Status tracking
+  status: text("status").default("in_progress"), // 'in_progress' | 'completed'
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
 });
 
 export const messages = pgTable("messages", {
@@ -36,9 +47,10 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 // === BASE SCHEMAS ===
 export const insertConversationSchema = createInsertSchema(conversations).omit({ 
   id: true, 
-  createdAt: true,
-  summary: true,
-  isComplete: true 
+  startedAt: true,
+  completedAt: true,
+  extractedData: true,
+  status: true
 });
 
 export const insertMessageSchema = createInsertSchema(messages).omit({ 
@@ -48,21 +60,15 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
 
 // === EXPLICIT API CONTRACT TYPES ===
 export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
 // Request/Response types
-export type StartChatRequest = {
-  customerInfo?: {
-    name?: string;
-    email?: string;
-    company?: string;
-  };
-};
-
 export type StartChatResponse = {
   sessionId: string;
   conversationId: number;
-  message: string; // Initial greeting/question
+  message: string;
 };
 
 export type ChatMessageRequest = {
@@ -72,7 +78,7 @@ export type ChatMessageRequest = {
 export type ChatMessageResponse = {
   message: string;
   isComplete: boolean;
-  summary?: any; // Present if isComplete is true
+  extractedData?: any;
 };
 
 export type ConversationHistoryResponse = {

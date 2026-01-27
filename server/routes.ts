@@ -1,48 +1,108 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "crypto";
 
-// Initialize Anthropic client using Replit AI integration env vars
 const anthropic = new Anthropic({
-  apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || "dummy", // Replit handles the key
+  apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || "dummy",
   baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
 });
 
-const SYSTEM_PROMPT = `You are an expert sales operations consultant for Staq. 
-Your goal is to audit a B2B company's sales and marketing technology stack.
-You need to find out:
-1. Contact details (Name, Company, Role) if not already provided.
-2. What CRM they use (Salesforce, HubSpot, etc.)
-3. What Sales Engagement platform they use (Outreach, Salesloft, Apollo, etc.)
-4. What Conversation Intelligence tool they use (Gong, Chorus, etc.)
-5. What Data provider they use (ZoomInfo, Apollo, Lusha, etc.)
+const SYSTEM_PROMPT = `You are Staq, an AI assistant conducting an intake conversation for a GTM tech stack health check. Your goal is to gather baseline context in 5-10 minutes—enough to prepare for a productive screen share call, not to do the full audit here.
 
-Ask ONE question at a time. Keep it conversational and professional. 
-Do not ask for all information at once.
-When you have identified all the tools or if the user doesn't have one, move to the next.
+## Your Personality
+- Warm and professional
+- Efficient—you respect their time
+- Knowledgeable about sales technology
+- Curious but not interrogating
 
-When the conversation is complete (you have all info or user explicitly ends it), 
-you MUST output a JSON summary in the LAST message. 
-Mark the conversation as complete by adding "ANALYSIS_COMPLETE" at the very end.
+## Conversation Rules
+1. Ask ONE question at a time
+2. Use multiple choice options when provided—it's faster
+3. Acknowledge their answer briefly before moving on
+4. Skip questions that don't apply based on prior answers
+5. Keep the whole conversation under 20 exchanges
+6. When they provide a company URL, extract what you can and confirm it with them
 
-The JSON summary format inside the final message:
+## Question Flow
+Follow this sequence, adapting based on their answers:
+PHASE 1: Welcome + set expectations (1 message)
+PHASE 2: Name → Email → Role (3 quick questions)
+PHASE 3: Company URL → Extract & confirm → Sales team size → Team composition if applicable
+PHASE 4: Inbound/outbound ratio → Deal velocity → Deal size → Buyer LinkedIn activity → Call-heavy process → Ops owner → Current mode
+PHASE 5: CRM → Gong/Chorus → Outreach/SalesLoft → Sales Navigator → ZoomInfo/Apollo → Other tools
+PHASE 6: Primary goal → Scheduling → Closing message
+
+## URL Extraction
+When they give a company URL, try to extract: company name, what they sell, industry, target customer, and any size signals. Present what you found and ask them to confirm or correct.
+
+## Tool Questions
+For each tool category:
+- First ask if they use it (with common options)
+- If yes, ask for a quick 1-5 satisfaction rating
+- Don't ask follow-up details—save that for the screen share
+
+## Skip Logic
+- If team size is 1-2, skip team composition
+- If they have no CRM, skip tool questions and note this as a major finding
+- If they don't use a tool, don't ask satisfaction rating
+
+## When Complete
+When you have gathered enough information, output a JSON block with extracted data AND a preliminary analysis. Use this exact format:
+
 \`\`\`json
 {
-  "contact": { "name": "...", "company": "...", "role": "..." },
-  "stack": {
-    "crm": "...",
-    "sales_engagement": "...",
-    "conversation_intel": "...",
-    "data_provider": "..."
+  "contact": {
+    "name": "...",
+    "email": "...",
+    "role": "..."
   },
-  "analysis": "Brief 2-3 sentence analysis of their stack maturity."
+  "company": {
+    "name": "...",
+    "url": "...",
+    "industry": "...",
+    "description": "..."
+  },
+  "team": {
+    "size": "...",
+    "composition": "..."
+  },
+  "sales_motion": {
+    "inbound_outbound_ratio": "...",
+    "deal_velocity": "...",
+    "deal_size": "...",
+    "buyer_linkedin_activity": "...",
+    "call_heavy": "...",
+    "ops_owner": "...",
+    "current_mode": "..."
+  },
+  "tools": {
+    "crm": { "name": "...", "satisfaction": null },
+    "conversation_intel": { "name": "...", "satisfaction": null },
+    "sales_engagement": { "name": "...", "satisfaction": null },
+    "sales_navigator": { "name": "...", "satisfaction": null },
+    "data_provider": { "name": "...", "satisfaction": null },
+    "other": []
+  },
+  "primary_goal": "...",
+  "analysis": {
+    "tool_fit_signals": ["..."],
+    "potential_mismatches": ["..."],
+    "flags_for_call": ["..."],
+    "recommended_focus_areas": ["..."]
+  }
 }
 \`\`\`
-`;
+
+After outputting the JSON, add "INTAKE_COMPLETE" on a new line to signal you're done.
+
+## Important
+This is a 5-10 minute intake, not an interrogation. If they give short answers, that's fine—we'll dig deeper on the call. Keep it moving.`;
+
+const FIRST_MESSAGE = "Hey! I'm here to learn a bit about your sales stack before we dig in together. This takes about 5 minutes. Let's start—what's your name?";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -52,49 +112,24 @@ export async function registerRoutes(
   // Start a new conversation
   app.post(api.chat.start.path, async (req, res) => {
     try {
-      const { customerInfo } = api.chat.start.input.parse(req.body);
       const sessionId = randomUUID();
 
-      // Create conversation record
       const conversation = await storage.createConversation({
         sessionId,
-        customerInfo: customerInfo || {},
-        transcript: [],
+        conversationLog: [],
       });
 
-      // Initial greeting from Claude
-      // We can either hardcode the first message to save latency/tokens 
-      // or ask Claude to start. Let's ask Claude to start contextually.
-      
-      const initialUserContext = customerInfo 
-        ? `Hi, I am ${customerInfo.name} from ${customerInfo.company}.` 
-        : "Hi, I'm interested in a stack audit.";
-
-      // Record implicit user start message (optional, but good for context)
-      // For now, let's just send a system prompt + context to get the first question
-      
-      const response = await anthropic.messages.create({
-        model: "claude-sonnet-4-5",
-        max_tokens: 1024,
-        system: SYSTEM_PROMPT,
-        messages: [
-          { role: "user", content: "Please start the audit interview. " + initialUserContext }
-        ],
-      });
-
-      const firstQuestion = response.content[0].type === 'text' ? response.content[0].text : "Hello! Let's start the audit.";
-
-      // Store the Assistant's first message
+      // Store the first assistant message
       await storage.createMessage({
         conversationId: conversation.id,
         role: "assistant",
-        content: firstQuestion
+        content: FIRST_MESSAGE
       });
 
       res.status(201).json({
         sessionId,
         conversationId: conversation.id,
-        message: firstQuestion,
+        message: FIRST_MESSAGE,
       });
 
     } catch (err) {
@@ -114,14 +149,14 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Session not found" });
       }
 
-      // Store User Message
+      // Store user message
       await storage.createMessage({
         conversationId: conversation.id,
         role: "user",
         content: message
       });
 
-      // Get history
+      // Get full conversation history
       const history = await storage.getMessages(conversation.id);
       
       // Format for Anthropic
@@ -130,10 +165,10 @@ export async function registerRoutes(
         content: m.content
       }));
 
-      // Call Claude
+      // Call Claude with full history
       const response = await anthropic.messages.create({
         model: "claude-sonnet-4-5",
-        max_tokens: 1024,
+        max_tokens: 2048,
         system: SYSTEM_PROMPT,
         messages: messages,
       });
@@ -142,41 +177,56 @@ export async function registerRoutes(
 
       // Check for completion
       let isComplete = false;
-      let summary = null;
-      let finalMessage = assistantText;
+      let extractedData = null;
+      let displayMessage = assistantText;
 
-      if (assistantText.includes("ANALYSIS_COMPLETE")) {
+      if (assistantText.includes("INTAKE_COMPLETE")) {
         isComplete = true;
-        // Extract JSON
+        
+        // Extract JSON from the response
         const jsonMatch = assistantText.match(/```json\n([\s\S]*?)\n```/);
         if (jsonMatch) {
           try {
-            summary = JSON.parse(jsonMatch[1]);
-            // Remove the JSON and marker from the displayed message
-            finalMessage = assistantText.replace(/```json\n[\s\S]*?\n```/, "").replace("ANALYSIS_COMPLETE", "").trim();
+            extractedData = JSON.parse(jsonMatch[1]);
+            // Clean up message for display
+            displayMessage = assistantText
+              .replace(/```json\n[\s\S]*?\n```/, "")
+              .replace("INTAKE_COMPLETE", "")
+              .trim();
           } catch (e) {
-            console.error("Failed to parse summary JSON", e);
+            console.error("Failed to parse extracted data JSON", e);
           }
         }
         
-        // Update conversation status
+        // Update conversation with completion data
         await storage.updateConversation(conversation.id, {
-          isComplete: true,
-          summary: summary || undefined
+          status: "completed",
+          completedAt: new Date(),
+          extractedData: extractedData,
+          name: extractedData?.contact?.name,
+          email: extractedData?.contact?.email,
+          companyName: extractedData?.company?.name,
+          companyUrl: extractedData?.company?.url,
         });
       }
 
-      // Store Assistant Message (the full text including JSON for record, or cleaned? Let's store full for audit, display cleaned)
+      // Store assistant message (full text for record)
       await storage.createMessage({
         conversationId: conversation.id,
         role: "assistant",
-        content: assistantText 
+        content: assistantText
+      });
+
+      // Update conversation log
+      const updatedHistory = await storage.getMessages(conversation.id);
+      await storage.updateConversation(conversation.id, {
+        conversationLog: updatedHistory.map(m => ({ role: m.role, content: m.content }))
       });
 
       res.json({
-        message: finalMessage,
+        message: displayMessage,
         isComplete,
-        summary
+        extractedData
       });
 
     } catch (err) {
@@ -185,7 +235,7 @@ export async function registerRoutes(
     }
   });
 
-  // Get history
+  // Get conversation history
   app.get(api.chat.history.path, async (req, res) => {
     const { sessionId } = req.params;
     const conversation = await storage.getConversationBySessionId(sessionId);

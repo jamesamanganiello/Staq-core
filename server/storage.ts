@@ -7,12 +7,9 @@ import {
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  // Conversation methods
   createConversation(data: InsertConversation): Promise<Conversation>;
   getConversationBySessionId(sessionId: string): Promise<Conversation | undefined>;
   updateConversation(id: number, updates: Partial<Conversation>): Promise<Conversation>;
-  
-  // Message methods
   createMessage(data: InsertMessage): Promise<Message>;
   getMessages(conversationId: number): Promise<Message[]>;
 }
