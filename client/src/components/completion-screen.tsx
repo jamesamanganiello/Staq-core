@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Calendar, Users, FileText, ExternalLink, X } from "lucide-react";
+import { CheckCircle2, Calendar, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +20,7 @@ interface CompletionScreenProps {
   };
 }
 
-const CALENDLY_URL = "https://calendly.com/placeholder";
+const CALENDLY_URL = import.meta.env.VITE_CALENDLY_URL || "https://calendly.com/placeholder";
 
 export function CompletionScreen({ data }: CompletionScreenProps) {
   const [showCalendly, setShowCalendly] = useState(false);
@@ -71,8 +71,9 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, type: "spring" }}
         className="w-full mt-6"
+        data-testid="completion-screen"
       >
-        <Card className="border-0 bg-gradient-to-br from-white to-primary/5 overflow-hidden shadow-xl">
+        <Card className="border-0 bg-gradient-to-br from-white to-primary/5 shadow-xl">
           <div className="h-1.5 bg-gradient-to-r from-primary to-accent w-full" />
           
           <CardContent className="p-6 md:p-8 space-y-6">
@@ -86,11 +87,17 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
                 <CheckCircle2 className="w-8 h-8 text-green-600" />
               </motion.div>
               
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+              <h2 
+                className="text-2xl md:text-3xl font-display font-bold text-foreground"
+                data-testid="text-completion-title"
+              >
                 Thanks {name}! You're all set.
               </h2>
               
-              <p className="text-muted-foreground text-lg max-w-md mx-auto">
+              <p 
+                className="text-muted-foreground text-lg max-w-md mx-auto"
+                data-testid="text-completion-summary"
+              >
                 We'll review your {crmName} setup and dig into {toolsSummary} on the call.
               </p>
             </div>
@@ -109,6 +116,7 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 + index * 0.1 }}
                     className="flex items-start gap-4"
+                    data-testid={`step-${step.number}`}
                   >
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm">
                       {step.number}
@@ -129,7 +137,7 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
             >
               <Button 
                 size="lg"
-                className="w-full text-lg py-6 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                className="w-full"
                 onClick={() => setShowCalendly(true)}
                 data-testid="button-schedule-audit"
               >
@@ -149,19 +157,20 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={() => setShowCalendly(false)}
+          data-testid="modal-calendly-overlay"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="relative w-full max-w-2xl h-[80vh] bg-white rounded-xl overflow-hidden shadow-2xl"
+            className="relative w-full max-w-2xl h-[80vh] bg-white rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            data-testid="modal-calendly-content"
           >
             <div className="absolute top-3 right-3 z-10">
               <Button
                 size="icon"
-                variant="ghost"
+                variant="outline"
                 onClick={() => setShowCalendly(false)}
-                className="rounded-full bg-white/80 hover:bg-white shadow"
                 data-testid="button-close-calendly"
               >
                 <X className="w-5 h-5" />
@@ -170,8 +179,9 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
             
             <iframe
               src={CALENDLY_URL}
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 rounded-xl"
               title="Schedule a call"
+              data-testid="iframe-calendly"
             />
           </motion.div>
         </div>

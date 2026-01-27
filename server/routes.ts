@@ -257,7 +257,11 @@ export async function registerRoutes(
       return res.status(404).json({ message: "Session not found" });
     }
     const messages = await storage.getMessages(conversation.id);
-    res.json({ conversation, messages });
+    
+    // Filter out admin-only data (preliminaryAnalysis) before sending to client
+    const { preliminaryAnalysis, ...safeConversation } = conversation;
+    
+    res.json({ conversation: safeConversation, messages });
   });
 
   return httpServer;
