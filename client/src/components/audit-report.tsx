@@ -2,6 +2,11 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Building2, User, Layers, FileText, Target, AlertTriangle, Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
+interface ToolInfo {
+  name: string;
+  satisfaction: number | null;
+}
+
 interface AuditReportProps {
   data: {
     contact?: { name: string; email: string; role: string };
@@ -18,10 +23,10 @@ interface AuditReportProps {
     };
     tools?: {
       crm: string;
-      conversation_intel: string;
-      sales_engagement: string;
-      sales_navigator: string;
-      data_provider: string;
+      conversation_intel: ToolInfo;
+      sales_engagement: ToolInfo;
+      sales_navigator: ToolInfo;
+      data_provider: ToolInfo;
       other: string[];
     };
     primary_goal?: string;
@@ -41,11 +46,11 @@ export function AuditReport({ data }: AuditReportProps) {
   const analysis = data.analysis;
 
   const toolItems = [
-    { label: "CRM", value: tools?.crm || "Not detected" },
-    { label: "Sales Engagement", value: tools?.sales_engagement || "Not detected" },
-    { label: "Conversation Intel", value: tools?.conversation_intel || "Not detected" },
-    { label: "Sales Navigator", value: tools?.sales_navigator || "Not detected" },
-    { label: "Data Provider", value: tools?.data_provider || "Not detected" },
+    { label: "CRM", value: tools?.crm || "Not detected", satisfaction: null },
+    { label: "Sales Engagement", value: tools?.sales_engagement?.name || "Not detected", satisfaction: tools?.sales_engagement?.satisfaction },
+    { label: "Conversation Intel", value: tools?.conversation_intel?.name || "Not detected", satisfaction: tools?.conversation_intel?.satisfaction },
+    { label: "Sales Navigator", value: tools?.sales_navigator?.name || "Not detected", satisfaction: tools?.sales_navigator?.satisfaction },
+    { label: "Data Provider", value: tools?.data_provider?.name || "Not detected", satisfaction: tools?.data_provider?.satisfaction },
   ];
 
   return (
@@ -125,10 +130,17 @@ export function AuditReport({ data }: AuditReportProps) {
               {toolItems.map((item) => (
                 <div 
                   key={item.label}
-                  className="p-3 rounded-lg bg-white border border-border shadow-sm"
+                  className="flex items-center justify-between p-3 rounded-lg bg-white border border-border shadow-sm"
                 >
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{item.label}</p>
-                  <p className="font-semibold text-foreground text-sm">{item.value}</p>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{item.label}</p>
+                    <p className="font-semibold text-foreground text-sm">{item.value}</p>
+                  </div>
+                  {item.satisfaction && (
+                    <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
+                      {item.satisfaction}/5
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
