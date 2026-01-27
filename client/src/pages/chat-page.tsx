@@ -3,8 +3,8 @@ import { useRoute, useLocation } from "wouter";
 import { useChatHistory, useSendMessage } from "@/hooks/use-chat";
 import { ChatMessage } from "@/components/chat-message";
 import { TypingIndicator } from "@/components/typing-indicator";
-import { AuditReport } from "@/components/audit-report";
-import { Send, Layers, RefreshCw } from "lucide-react";
+import { CompletionScreen } from "@/components/completion-screen";
+import { Send, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ChatPage() {
@@ -84,7 +84,7 @@ export default function ChatPage() {
           <div className="flex items-center gap-2">
             <span className={`h-2.5 w-2.5 rounded-full ${isCompleted ? 'bg-green-500' : 'bg-accent animate-pulse'}`} />
             <span className="text-sm font-medium text-muted-foreground hidden sm:inline-block">
-              {isCompleted ? "Audit Complete" : "Audit in Progress"}
+              {isCompleted ? "Ready to Schedule" : "Intake in Progress"}
             </span>
           </div>
         </div>
@@ -123,9 +123,9 @@ export default function ChatPage() {
               </motion.div>
             )}
 
-            {/* Audit Report */}
+            {/* Completion Screen */}
             {isCompleted && extractedData && (
-              <AuditReport data={extractedData} />
+              <CompletionScreen data={extractedData} />
             )}
 
             <div ref={messagesEndRef} className="h-4" />
@@ -133,20 +133,10 @@ export default function ChatPage() {
         </div>
       </main>
 
-      {/* Input Area */}
-      <footer className="flex-none bg-white border-t border-border p-4 md:p-6">
-        <div className="max-w-3xl mx-auto">
-          {isCompleted ? (
-            <div className="flex justify-center">
-              <button 
-                onClick={() => setLocation("/")}
-                className="flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Start New Assessment
-              </button>
-            </div>
-          ) : (
+      {/* Input Area - Hidden when completed */}
+      {!isCompleted && (
+        <footer className="flex-none bg-white border-t border-border p-4 md:p-6">
+          <div className="max-w-3xl mx-auto">
             <form 
               onSubmit={handleSend}
               className="relative flex items-center gap-2 bg-muted/30 p-2 rounded-2xl border border-border focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/5 transition-all duration-200"
@@ -158,22 +148,24 @@ export default function ChatPage() {
                 placeholder="Type your answer..."
                 disabled={sendMessageMutation.isPending}
                 className="flex-1 bg-transparent border-none px-4 py-3 text-base focus:outline-none placeholder:text-muted-foreground/60"
+                data-testid="input-chat-message"
                 autoFocus
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim() || sendMessageMutation.isPending}
                 className="p-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow hover:scale-105 active:scale-95"
+                data-testid="button-send-message"
               >
                 <Send className="w-5 h-5" />
               </button>
             </form>
-          )}
-          <p className="text-center text-xs text-muted-foreground mt-3">
-            Press Enter to send • AI can make mistakes.
-          </p>
-        </div>
-      </footer>
+            <p className="text-center text-xs text-muted-foreground mt-3">
+              Press Enter to send
+            </p>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }
