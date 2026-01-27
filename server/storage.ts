@@ -1,38 +1,54 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import { 
+  conversations, messages, 
+  type Conversation, type Message,
+  type InsertConversation, type InsertMessage 
+} from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Conversation methods
+  createConversation(data: InsertConversation): Promise<Conversation>;
+  getConversationBySessionId(sessionId: string): Promise<Conversation | undefined>;
+  updateConversation(id: number, updates: Partial<Conversation>): Promise<Conversation>;
+  
+  // Message methods
+  createMessage(data: InsertMessage): Promise<Message>;
+  getMessages(conversationId: number): Promise<Message[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async createConversation(data: InsertConversation): Promise<Conversation> {
+    const [conversation] = await db.insert(conversations).values(data).returning();
+    return conversation;
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getConversationBySessionId(sessionId: string): Promise<Conversation | undefined> {
+    const [conversation] = await db.select()
+      .from(conversations)
+      .where(eq(conversations.sessionId, sessionId));
+    return conversation;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async updateConversation(id: number, updates: Partial<Conversation>): Promise<Conversation> {
+    const [updated] = await db.update(conversations)
+      .set(updates)
+      .where(eq(conversations.id, id))
+      .returning();
+    return updated;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async createMessage(data: InsertMessage): Promise<Message> {
+    const [message] = await db.insert(messages).values(data).returning();
+    return message;
+  }
+
+  async getMessages(conversationId: number): Promise<Message[]> {
+    return db.select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(messages.createdAt);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
