@@ -41,14 +41,12 @@ When they give a company URL, try to extract: company name, what they sell, indu
 
 ## Tool Questions
 For each tool category:
-- First ask if they use it (with common options)
-- If yes, ask for a quick 1-5 satisfaction rating
-- Don't ask follow-up details—save that for the screen share
+- Ask if they use it (with common options)
+- Don't ask satisfaction ratings or follow-up details—save that for the screen share
 
 ## Skip Logic
 - If team size is 1-2, skip team composition
 - If they have no CRM, skip tool questions and note this as a major finding
-- If they don't use a tool, don't ask satisfaction rating
 
 ## When Complete
 When you have gathered enough information, output a JSON block with extracted data AND a preliminary analysis. Use this exact format:
@@ -80,11 +78,11 @@ When you have gathered enough information, output a JSON block with extracted da
     "current_mode": "..."
   },
   "tools": {
-    "crm": { "name": "...", "satisfaction": null },
-    "conversation_intel": { "name": "...", "satisfaction": null },
-    "sales_engagement": { "name": "...", "satisfaction": null },
-    "sales_navigator": { "name": "...", "satisfaction": null },
-    "data_provider": { "name": "...", "satisfaction": null },
+    "crm": "...",
+    "conversation_intel": "...",
+    "sales_engagement": "...",
+    "sales_navigator": "...",
+    "data_provider": "...",
     "other": []
   },
   "primary_goal": "...",
