@@ -31,8 +31,8 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
         <div className="flex items-center gap-3 font-display font-bold text-2xl text-primary">
-          <img src="/images/staq-logo.png" alt="STAQ" className="w-10 h-10" />
-          STAQ<span className="text-foreground/80 font-medium">Audit</span>
+          <img src="/images/staq-logo.png" alt="Staq" className="w-10 h-10" />
+          Staq
         </div>
         <button 
           className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
@@ -127,7 +127,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="w-full border-t border-border/50 py-8 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} STAQ. All rights reserved.
+          © {new Date().getFullYear()} Staq. All rights reserved.
         </div>
       </footer>
     </div>

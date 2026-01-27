@@ -12,7 +12,7 @@ const anthropic = new Anthropic({
   baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
 });
 
-const SYSTEM_PROMPT = `You are an expert sales operations consultant for STAQ. 
+const SYSTEM_PROMPT = `You are an expert sales operations consultant for Staq. 
 Your goal is to audit a B2B company's sales and marketing technology stack.
 You need to find out:
 1. Contact details (Name, Company, Role) if not already provided.

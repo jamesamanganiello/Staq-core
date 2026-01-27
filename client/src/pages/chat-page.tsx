@@ -76,7 +76,7 @@ export default function ChatPage() {
               <Layers className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="font-display font-bold text-lg text-foreground leading-tight">STAQ Audit</h1>
+              <h1 className="font-display font-bold text-lg text-foreground leading-tight">Staq</h1>
               <p className="text-xs text-muted-foreground">AI Sales Stack Analyst</p>
             </div>
           </div>
