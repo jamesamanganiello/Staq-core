@@ -51,7 +51,12 @@ For each tool category:
 - If they don't use a tool, don't ask satisfaction rating
 
 ## When Complete
-When you have gathered enough information, output a JSON block with extracted data AND a preliminary analysis. Use this exact format:
+When you have gathered enough information:
+1. Thank them warmly by name
+2. Let them know we'll review their setup before the call
+3. Output a JSON block with all collected data
+
+Use this exact JSON format:
 
 \`\`\`json
 {
@@ -88,16 +93,17 @@ When you have gathered enough information, output a JSON block with extracted da
     "other": []
   },
   "primary_goal": "...",
-  "analysis": {
-    "tool_fit_signals": ["..."],
-    "potential_mismatches": ["..."],
-    "flags_for_call": ["..."],
-    "recommended_focus_areas": ["..."]
+  "preliminary_analysis": {
+    "red_flags": ["..."],
+    "screen_share_focus_areas": ["..."],
+    "potential_questions": ["..."]
   }
 }
 \`\`\`
 
 After outputting the JSON, add "INTAKE_COMPLETE" on a new line to signal you're done.
+
+IMPORTANT: The preliminary_analysis is for internal admin use only—the customer will NOT see it. Keep your closing message warm and focused on next steps (scheduling the call).
 
 ## Important
 This is a 5-10 minute intake, not an interrogation. If they give short answers, that's fine—we'll dig deeper on the call. Keep it moving.`;
@@ -178,6 +184,7 @@ export async function registerRoutes(
       // Check for completion
       let isComplete = false;
       let extractedData = null;
+      let preliminaryAnalysis = null;
       let displayMessage = assistantText;
 
       if (assistantText.includes("INTAKE_COMPLETE")) {
@@ -187,8 +194,14 @@ export async function registerRoutes(
         const jsonMatch = assistantText.match(/```json\n([\s\S]*?)\n```/);
         if (jsonMatch) {
           try {
-            extractedData = JSON.parse(jsonMatch[1]);
-            // Clean up message for display
+            const fullData = JSON.parse(jsonMatch[1]);
+            
+            // Separate preliminary_analysis (admin-only) from customer data
+            preliminaryAnalysis = fullData.preliminary_analysis || null;
+            delete fullData.preliminary_analysis;
+            extractedData = fullData;
+            
+            // Clean up message for display (remove JSON and marker)
             displayMessage = assistantText
               .replace(/```json\n[\s\S]*?\n```/, "")
               .replace("INTAKE_COMPLETE", "")
@@ -203,6 +216,7 @@ export async function registerRoutes(
           status: "completed",
           completedAt: new Date(),
           extractedData: extractedData,
+          preliminaryAnalysis: preliminaryAnalysis,
           name: extractedData?.contact?.name,
           email: extractedData?.contact?.email,
           companyName: extractedData?.company?.name,

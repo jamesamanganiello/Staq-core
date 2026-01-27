@@ -16,7 +16,8 @@ export const conversations = pgTable("conversations", {
   
   // Conversation data
   conversationLog: jsonb("conversation_log").$type<Array<{role: string, content: string}>>(),
-  extractedData: jsonb("extracted_data"), // Claude's final JSON output
+  extractedData: jsonb("extracted_data"), // Claude's final JSON output (customer-visible data)
+  preliminaryAnalysis: jsonb("preliminary_analysis"), // Admin-only analysis (red_flags, focus_areas, questions)
   
   // Status tracking
   status: text("status").default("in_progress"), // 'in_progress' | 'completed'
