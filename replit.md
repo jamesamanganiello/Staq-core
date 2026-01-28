@@ -21,6 +21,26 @@ Upon completion, the system:
 
 Preferred communication style: Simple, everyday language.
 
+## Brand Design System
+
+### Color Palette
+- **Bright Cyan**: #00D4E8 (HSL: 186 100% 45%) - highlights, hover states, accents
+- **Primary Cyan**: #00B4C4 (HSL: 185 100% 38%) - primary buttons, links
+- **Deep Cyan**: #0099A8 (HSL: 184 100% 33%) - shadows, button hover states
+- **Midnight**: #1A1A2E (HSL: 240 28% 14%) - dark backgrounds, headlines
+- **Light Gray**: #F8F9FA (HSL: 210 17% 98%) - subtle backgrounds
+- **Soft Cyan Tint**: #F0FDFF (HSL: 186 100% 97%) - chat background
+- **Success Green**: #10B981 (HSL: 160 84% 39%) - success states
+
+### Typography
+- Headlines: Outfit font, Bold (700), tight letter-spacing
+- Body: Inter font, Regular (400), line-height 1.6
+
+### Page Layouts
+- **Landing Page**: Midnight hero → White value props → Light gray "How It Works" → Midnight footer
+- **Chat Page**: Midnight header with progress bar → Soft cyan chat area → White input footer
+- **Admin Pages**: Midnight headers, Light gray backgrounds, branded status badges
+
 ## System Architecture
 
 ### Frontend Architecture
