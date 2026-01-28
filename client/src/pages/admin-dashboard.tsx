@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Layers, LogOut, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { LogOut, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import {
   Table,
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Session = {
   id: number;
@@ -46,8 +46,13 @@ export default function AdminDashboard() {
     setLocation("/admin");
   };
 
+  useEffect(() => {
+    if (error) {
+      setLocation("/admin");
+    }
+  }, [error, setLocation]);
+
   if (error) {
-    setLocation("/admin");
     return null;
   }
 
@@ -59,11 +64,26 @@ export default function AdminDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"><CheckCircle className="w-3 h-3 mr-1" />Completed</Badge>;
+        return (
+          <Badge className="status-completed border-0">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Completed
+          </Badge>
+        );
       case "in_progress":
-        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"><Clock className="w-3 h-3 mr-1" />In Progress</Badge>;
+        return (
+          <Badge className="status-in-progress border-0">
+            <Clock className="w-3 h-3 mr-1" />
+            In Progress
+          </Badge>
+        );
       case "abandoned":
-        return <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"><AlertCircle className="w-3 h-3 mr-1" />Abandoned</Badge>;
+        return (
+          <Badge className="status-abandoned border-0">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            Abandoned
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -81,19 +101,24 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <header className="bg-white dark:bg-gray-900 border-b sticky top-0 z-50">
+    <div className="min-h-screen bg-light-gray">
+      {/* Header - Midnight */}
+      <header className="bg-midnight sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg">
-              <Layers className="w-5 h-5 text-primary" />
-            </div>
+            <img src="/images/staq-logo.png" alt="Staq" className="w-8 h-8 brightness-0 invert" />
             <div>
-              <h1 className="font-display font-bold text-lg">Staq Admin</h1>
-              <p className="text-xs text-muted-foreground">Intake Sessions</p>
+              <h1 className="font-display font-bold text-lg text-white">Staq Admin</h1>
+              <p className="text-xs text-gray-400">Intake Sessions</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleLogout} data-testid="button-logout">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleLogout} 
+            data-testid="button-logout"
+            className="border-gray-600 text-gray-300 hover:bg-white/10 hover:text-white"
+          >
             <LogOut className="w-4 h-4 mr-2" />
             Logout
           </Button>
@@ -103,9 +128,9 @@ export default function AdminDashboard() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
-            <CardTitle>Intake Sessions</CardTitle>
+            <CardTitle className="text-midnight">Intake Sessions</CardTitle>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Filter:</span>
+              <span className="text-sm text-gray-500">Filter:</span>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-40" data-testid="select-status-filter">
                   <SelectValue />
@@ -121,11 +146,11 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-gray-500">
                 Loading sessions...
               </div>
             ) : filteredSessions.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-gray-500">
                 No sessions found
               </div>
             ) : (
@@ -133,36 +158,38 @@ export default function AdminDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Contact</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Started</TableHead>
-                      <TableHead>Completed</TableHead>
-                      <TableHead>CRM</TableHead>
+                      <TableHead className="text-midnight font-semibold">Company</TableHead>
+                      <TableHead className="text-midnight font-semibold">Contact</TableHead>
+                      <TableHead className="text-midnight font-semibold">Status</TableHead>
+                      <TableHead className="text-midnight font-semibold">Started</TableHead>
+                      <TableHead className="text-midnight font-semibold">Completed</TableHead>
+                      <TableHead className="text-midnight font-semibold">CRM</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredSessions.map((session) => (
                       <TableRow 
                         key={session.id} 
-                        className="cursor-pointer hover-elevate"
+                        className="cursor-pointer table-row-hover transition-brand"
                         onClick={() => setLocation(`/admin/sessions/${session.id}`)}
                         data-testid={`row-session-${session.id}`}
                       >
-                        <TableCell className="font-medium">{session.companyName}</TableCell>
+                        <TableCell className="font-medium text-midnight">{session.companyName}</TableCell>
                         <TableCell>{session.contactName}</TableCell>
                         <TableCell>{getStatusBadge(session.status || "in_progress")}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
+                        <TableCell className="text-gray-500 text-sm">
                           {formatDate(session.startedAt)}
                         </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
+                        <TableCell className="text-gray-500 text-sm">
                           {formatDate(session.completedAt)}
                         </TableCell>
                         <TableCell>
                           {session.crmType ? (
-                            <Badge variant="outline">{session.crmType}</Badge>
+                            <Badge variant="outline" className="border-[#00B4C4] text-[#00B4C4]">
+                              {session.crmType}
+                            </Badge>
                           ) : (
-                            <span className="text-muted-foreground">-</span>
+                            <span className="text-gray-400">-</span>
                           )}
                         </TableCell>
                       </TableRow>
