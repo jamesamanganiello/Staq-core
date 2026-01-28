@@ -23,6 +23,8 @@ export const conversationLogs = pgTable("conversation_logs", {
   status: text("status").default("in_progress"),
   startedAt: timestamp("started_at").defaultNow(),
   completedAt: timestamp("completed_at"),
+  adminNotes: text("admin_notes"),
+  adminNotesUpdatedAt: timestamp("admin_notes_updated_at"),
 });
 
 export const messages = pgTable("messages", {

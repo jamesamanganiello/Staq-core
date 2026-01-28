@@ -4,7 +4,7 @@ import {
   type Customer, type ConversationLog, type Message,
   type InsertCustomer, type InsertConversationLog, type InsertMessage 
 } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   createCustomer(data: InsertCustomer): Promise<Customer>;
@@ -18,6 +18,11 @@ export interface IStorage {
   
   createMessage(data: InsertMessage): Promise<Message>;
   getMessages(conversationLogId: number): Promise<Message[]>;
+  
+  // Admin methods
+  getAllConversationsWithCustomers(): Promise<Array<{ log: ConversationLog; customer: Customer | null }>>;
+  getConversationById(id: number): Promise<ConversationLog | undefined>;
+  getConversationWithCustomerById(id: number): Promise<{ log: ConversationLog; customer: Customer | null } | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -89,6 +94,52 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .where(eq(messages.conversationLogId, conversationLogId))
       .orderBy(messages.createdAt);
+  }
+
+  async getAllConversationsWithCustomers(): Promise<Array<{ log: ConversationLog; customer: Customer | null }>> {
+    const logs = await db.select()
+      .from(conversationLogs)
+      .orderBy(desc(conversationLogs.startedAt));
+    
+    const results: Array<{ log: ConversationLog; customer: Customer | null }> = [];
+    
+    for (const log of logs) {
+      let customer: Customer | null = null;
+      if (log.customerId) {
+        const [c] = await db.select()
+          .from(customers)
+          .where(eq(customers.id, log.customerId));
+        customer = c || null;
+      }
+      results.push({ log, customer });
+    }
+    
+    return results;
+  }
+
+  async getConversationById(id: number): Promise<ConversationLog | undefined> {
+    const [log] = await db.select()
+      .from(conversationLogs)
+      .where(eq(conversationLogs.id, id));
+    return log;
+  }
+
+  async getConversationWithCustomerById(id: number): Promise<{ log: ConversationLog; customer: Customer | null } | undefined> {
+    const [log] = await db.select()
+      .from(conversationLogs)
+      .where(eq(conversationLogs.id, id));
+    
+    if (!log) return undefined;
+    
+    let customer: Customer | null = null;
+    if (log.customerId) {
+      const [c] = await db.select()
+        .from(customers)
+        .where(eq(customers.id, log.customerId));
+      customer = c || null;
+    }
+    
+    return { log, customer };
   }
 }
 

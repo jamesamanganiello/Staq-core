@@ -336,5 +336,109 @@ export async function registerRoutes(
     res.json({ conversation: safeConversation, messages, customer: result.customer });
   });
 
+  // ============= ADMIN ROUTES =============
+  
+  // Admin login
+  app.post("/api/admin/login", (req, res) => {
+    const { password } = req.body;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    
+    if (!adminPassword) {
+      return res.status(500).json({ message: "Admin password not configured" });
+    }
+    
+    if (password === adminPassword) {
+      // Set session cookie
+      res.cookie("admin_session", "authenticated", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      });
+      return res.json({ success: true });
+    }
+    
+    return res.status(401).json({ message: "Invalid password" });
+  });
+  
+  // Admin logout
+  app.post("/api/admin/logout", (req, res) => {
+    res.clearCookie("admin_session");
+    res.json({ success: true });
+  });
+  
+  // Admin auth check middleware
+  const requireAdmin = (req: any, res: any, next: any) => {
+    const adminCookie = req.cookies?.admin_session;
+    if (adminCookie === "authenticated") {
+      return next();
+    }
+    return res.status(401).json({ message: "Unauthorized" });
+  };
+  
+  // Get all sessions (admin)
+  app.get("/api/admin/sessions", requireAdmin, async (req, res) => {
+    try {
+      const results = await storage.getAllConversationsWithCustomers();
+      
+      const sessions = results.map(({ log, customer }) => ({
+        id: log.id,
+        sessionId: log.sessionId,
+        companyName: customer?.companyName || (log.extractedData as any)?.company_context?.name || "Unknown",
+        contactName: customer?.contactName || (log.extractedData as any)?.contact?.name || "Unknown",
+        status: log.status,
+        startedAt: log.startedAt,
+        completedAt: log.completedAt,
+        crmType: (log.extractedData as any)?.crm?.name || null,
+      }));
+      
+      res.json({ sessions });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to fetch sessions" });
+    }
+  });
+  
+  // Get single session details (admin)
+  app.get("/api/admin/sessions/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const result = await storage.getConversationWithCustomerById(id);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const messages = await storage.getMessages(result.log.id);
+      
+      res.json({
+        log: result.log,
+        customer: result.customer,
+        messages,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to fetch session" });
+    }
+  });
+  
+  // Update admin notes
+  app.patch("/api/admin/sessions/:id/notes", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { notes } = req.body;
+      
+      const updated = await storage.updateConversationLog(id, {
+        adminNotes: notes,
+        adminNotesUpdatedAt: new Date(),
+      });
+      
+      res.json({ success: true, adminNotesUpdatedAt: updated.adminNotesUpdatedAt });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to update notes" });
+    }
+  });
+
   return httpServer;
 }
