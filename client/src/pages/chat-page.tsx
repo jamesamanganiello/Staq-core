@@ -4,7 +4,8 @@ import { useChatHistory, useSendMessage } from "@/hooks/use-chat";
 import { ChatMessage } from "@/components/chat-message";
 import { TypingIndicator } from "@/components/typing-indicator";
 import { CompletionScreen } from "@/components/completion-screen";
-import { Send, X, ArrowLeft } from "lucide-react";
+import { StaqLogo } from "@/components/staq-logo";
+import { Send, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ChatPage() {
@@ -65,9 +66,7 @@ export default function ChatPage() {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-soft-cyan">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-midnight flex items-center justify-center">
-            <img src="/images/staq-logo.png" alt="Staq" className="w-6 h-6 brightness-0 invert" />
-          </div>
+          <StaqLogo height={48} variant="color" />
           <p className="text-gray-500 font-medium">Loading session...</p>
         </div>
       </div>
@@ -79,12 +78,10 @@ export default function ChatPage() {
       {/* Header Bar - Midnight Background */}
       <header className="flex-none bg-midnight z-10">
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <img src="/images/staq-logo.png" alt="Staq" className="w-8 h-8 brightness-0 invert" />
-            <div>
-              <h1 className="font-display font-bold text-lg text-white leading-tight">Staq</h1>
-              <p className="text-xs text-gray-400">GTM Stack Audit</p>
-            </div>
+          <div className="flex items-center gap-4">
+            <StaqLogo height={32} variant="white" />
+            <div className="h-6 w-px bg-gray-600" />
+            <span className="text-sm text-gray-400">GTM Stack Audit</span>
           </div>
           
           <button

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Clock, CheckCircle, AlertCircle, Download, FileText, Database, Brain, StickyNote } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { StaqLogo } from "@/components/staq-logo";
 
 type SessionDetail = {
   log: {

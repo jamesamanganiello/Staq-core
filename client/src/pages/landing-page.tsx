@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, BarChart3, ShieldCheck, Layers, MessageSquare, Calendar, FileCheck } from "lucide-react";
 import { useState } from "react";
+import { StaqLogo } from "@/components/staq-logo";
 
 export default function LandingPage() {
   const [_location, setLocation] = useLocation();
@@ -28,10 +29,7 @@ export default function LandingPage() {
       <section className="bg-midnight text-white">
         {/* Navigation */}
         <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-          <div className="flex items-center gap-3 font-display font-bold text-2xl text-white">
-            <img src="/images/staq-logo.png" alt="Staq" className="w-10 h-10 brightness-0 invert" />
-            Staq
-          </div>
+          <StaqLogo height={40} variant="white" />
           <button 
             className="text-sm font-medium text-gray-400 hover:text-white transition-brand"
             onClick={() => window.open('https://staq.ai', '_blank')}
@@ -235,10 +233,7 @@ export default function LandingPage() {
       <footer className="bg-midnight py-8">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 font-display font-bold text-white">
-              <img src="/images/staq-logo.png" alt="Staq" className="w-6 h-6 brightness-0 invert" />
-              Staq
-            </div>
+            <StaqLogo height={24} variant="white" />
             <span className="text-sm text-gray-500">
               © {new Date().getFullYear()} All rights reserved.
             </span>

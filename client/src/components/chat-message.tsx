@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
+import { StaqIcon } from "@/components/staq-logo";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -30,8 +31,8 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
       )}>
         {/* Staq Icon for assistant messages */}
         {!isUser && (
-          <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-midnight flex items-center justify-center shadow-sm mr-3 mt-1">
-            <img src="/images/staq-logo.png" alt="Staq" className="w-4 h-4 brightness-0 invert" />
+          <div className="flex-shrink-0 mr-3 mt-1">
+            <StaqIcon size={20} variant="color" />
           </div>
         )}
 

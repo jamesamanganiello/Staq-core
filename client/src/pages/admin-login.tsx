@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { StaqLogo } from "@/components/staq-logo";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
@@ -32,10 +33,10 @@ export default function AdminLogin() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
-            <div className="mx-auto bg-midnight w-16 h-16 rounded-lg flex items-center justify-center mb-4">
-              <img src="/images/staq-logo.png" alt="Staq" className="w-8 h-8 brightness-0 invert" />
+            <div className="mx-auto mb-4 flex justify-center">
+              <StaqLogo height={48} variant="color" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-midnight">Staq Admin</h1>
+            <h1 className="text-xl font-display font-bold text-midnight">Admin Portal</h1>
             <p className="text-gray-500 mt-1">Sign in to access the dashboard</p>
           </div>
           

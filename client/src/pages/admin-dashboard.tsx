@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { StaqLogo } from "@/components/staq-logo";
 import {
   Table,
   TableBody,
@@ -105,12 +106,10 @@ export default function AdminDashboard() {
       {/* Header - Midnight */}
       <header className="bg-midnight sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/images/staq-logo.png" alt="Staq" className="w-8 h-8 brightness-0 invert" />
-            <div>
-              <h1 className="font-display font-bold text-lg text-white">Staq Admin</h1>
-              <p className="text-xs text-gray-400">Intake Sessions</p>
-            </div>
+          <div className="flex items-center gap-4">
+            <StaqLogo height={32} variant="white" />
+            <div className="h-6 w-px bg-gray-600" />
+            <span className="text-sm text-gray-400">Admin Dashboard</span>
           </div>
           <Button 
             variant="outline" 

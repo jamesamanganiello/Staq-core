@@ -1,12 +1,11 @@
 import { motion } from "framer-motion";
+import { StaqIcon } from "@/components/staq-logo";
 
 export function TypingIndicator() {
   return (
     <div className="flex items-center gap-3">
       {/* Staq Icon */}
-      <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-midnight flex items-center justify-center shadow-sm">
-        <img src="/images/staq-logo.png" alt="Staq" className="w-4 h-4 brightness-0 invert" />
-      </div>
+      <StaqIcon size={20} variant="color" />
       
       {/* Typing dots */}
       <div className="flex items-center space-x-1.5 p-4 bg-white rounded-lg rounded-bl-sm shadow-sm">
