@@ -126,8 +126,15 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="w-full border-t border-border/50 py-8 bg-white/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Staq. All rights reserved.
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-sm text-muted-foreground">
+          <span>© {new Date().getFullYear()} Staq. All rights reserved.</span>
+          <a 
+            href="/admin" 
+            className="text-xs text-gray-400 hover:text-gray-500 transition-colors"
+            data-testid="link-admin"
+          >
+            Admin
+          </a>
         </div>
       </footer>
     </div>
