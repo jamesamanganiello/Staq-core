@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Calendar } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { CheckCircle2, Calendar, ArrowRight } from "lucide-react";
 
 declare global {
   interface Window {
@@ -70,36 +68,37 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
       className="w-full mt-6"
       data-testid="completion-screen"
     >
-      <Card className="border-0 bg-gradient-to-br from-white to-primary/5 dark:from-gray-900 dark:to-primary/10 shadow-xl">
-        <div className="h-1.5 bg-gradient-to-r from-primary to-accent w-full" />
-        
-        <CardContent className="p-6 md:p-8 space-y-6">
-          <div className="text-center space-y-3">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* Card Content */}
+        <div className="p-6 md:p-8 space-y-6">
+          {/* Success Icon */}
+          <div className="text-center space-y-4">
             <motion.div 
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 mx-auto"
+              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#10B981]/10 mx-auto"
             >
-              <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="w-8 h-8 text-[#10B981]" />
             </motion.div>
             
             <h2 
-              className="text-2xl md:text-3xl font-display font-bold text-foreground"
+              className="text-2xl md:text-3xl font-display font-bold text-midnight"
               data-testid="text-completion-title"
             >
               You're all set, {name}!
             </h2>
             
             <p 
-              className="text-muted-foreground text-lg"
+              className="text-gray-500 text-lg"
               data-testid="text-completion-subtitle"
             >
               Here's what happens next:
             </p>
           </div>
 
-          <div className="bg-muted/30 rounded-xl p-5 md:p-6">
+          {/* Steps List */}
+          <div className="bg-light-gray rounded-lg p-5 md:p-6">
             <div className="space-y-4">
               {steps.map((step, index) => (
                 <motion.div
@@ -110,32 +109,33 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
                   className="flex items-start gap-4"
                   data-testid={`step-${index + 1}`}
                 >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-sm">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-midnight text-white font-bold flex items-center justify-center text-sm">
                     {index + 1}
                   </div>
-                  <p className="font-medium text-foreground pt-1">{step}</p>
+                  <p className="font-medium text-midnight pt-1">{step}</p>
                 </motion.div>
               ))}
             </div>
           </div>
 
+          {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
           >
-            <Button 
-              size="lg"
-              className="w-full"
+            <button 
               onClick={openCalendly}
               data-testid="button-schedule-screen-share"
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#00B4C4] text-white font-semibold text-lg rounded-md hover:bg-[#0099A8] transition-brand shadow-cyan hover:shadow-cyan-lg"
             >
-              <Calendar className="w-5 h-5 mr-2" />
+              <Calendar className="w-5 h-5" />
               Schedule Your Screen Share
-            </Button>
+              <ArrowRight className="w-5 h-5" />
+            </button>
           </motion.div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }

@@ -4,7 +4,7 @@ import { useChatHistory, useSendMessage } from "@/hooks/use-chat";
 import { ChatMessage } from "@/components/chat-message";
 import { TypingIndicator } from "@/components/typing-indicator";
 import { CompletionScreen } from "@/components/completion-screen";
-import { Send, Layers } from "lucide-react";
+import { Send, X, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ChatPage() {
@@ -12,18 +12,14 @@ export default function ChatPage() {
   const [, setLocation] = useLocation();
   const sessionId = params?.sessionId || "";
 
-  // State
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Queries & Mutations
   const { data: historyData, isLoading, error } = useChatHistory(sessionId);
   const sendMessageMutation = useSendMessage(sessionId);
 
-  // Effects
   useEffect(() => {
     if (error) {
-      // If session invalid, go back home
       setLocation("/");
     }
   }, [error, setLocation]);
@@ -41,67 +37,95 @@ export default function ChatPage() {
     if (!inputValue.trim() || sendMessageMutation.isPending) return;
 
     const message = inputValue;
-    setInputValue(""); // Optimistic clear
+    setInputValue("");
 
     try {
       await sendMessageMutation.mutateAsync({ message });
     } catch (err) {
-      setInputValue(message); // Restore on error
+      setInputValue(message);
     }
   };
 
-  // Derived state
+  const handleExit = () => {
+    if (window.confirm("Are you sure you want to exit? Your progress will be saved.")) {
+      setLocation("/");
+    }
+  };
+
   const isCompleted = historyData?.conversation.status === "completed";
   const extractedData = historyData?.conversation.extractedData as any;
   const messages = historyData?.messages || [];
 
+  // Calculate progress (rough estimate based on message count)
+  const totalSteps = 6;
+  const currentStep = Math.min(Math.ceil(messages.length / 4), totalSteps);
+  const progressPercent = isCompleted ? 100 : (currentStep / totalSteps) * 100;
+
   if (isLoading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4 animate-pulse">
-          <Layers className="w-12 h-12 text-muted-foreground/30" />
-          <p className="text-muted-foreground font-medium">Loading session...</p>
+      <div className="h-screen w-full flex items-center justify-center bg-soft-cyan">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-midnight flex items-center justify-center">
+            <img src="/images/staq-logo.png" alt="Staq" className="w-6 h-6 brightness-0 invert" />
+          </div>
+          <p className="text-gray-500 font-medium">Loading session...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
-      {/* Header */}
-      <header className="flex-none bg-white border-b border-border shadow-sm z-10 px-4 md:px-8 py-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+    <div className="flex flex-col h-screen bg-soft-cyan overflow-hidden">
+      {/* Header Bar - Midnight Background */}
+      <header className="flex-none bg-midnight z-10">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg">
-              <Layers className="w-5 h-5 text-primary" />
-            </div>
+            <img src="/images/staq-logo.png" alt="Staq" className="w-8 h-8 brightness-0 invert" />
             <div>
-              <h1 className="font-display font-bold text-lg text-foreground leading-tight">Staq</h1>
-              <p className="text-xs text-muted-foreground">AI Sales Stack Analyst</p>
+              <h1 className="font-display font-bold text-lg text-white leading-tight">Staq</h1>
+              <p className="text-xs text-gray-400">GTM Stack Audit</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <span className={`h-2.5 w-2.5 rounded-full ${isCompleted ? 'bg-green-500' : 'bg-accent animate-pulse'}`} />
-            <span className="text-sm font-medium text-muted-foreground hidden sm:inline-block">
-              {isCompleted ? "Ready to Schedule" : "Intake in Progress"}
-            </span>
-          </div>
+          <button
+            onClick={handleExit}
+            className="p-2 text-gray-400 hover:text-white transition-brand rounded-lg hover:bg-white/10"
+            data-testid="button-exit-chat"
+            aria-label="Exit chat"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
+        
+        {/* Progress Bar */}
+        {!isCompleted && (
+          <div className="px-4 md:px-6 pb-3">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs text-gray-400">Step {currentStep} of {totalSteps}</span>
+                <span className="text-xs text-gray-400">{Math.round(progressPercent)}%</span>
+              </div>
+              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div 
+                  className="h-full progress-gradient rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Chat Area */}
       <main className="flex-1 overflow-y-auto px-4 py-6 scroll-smooth">
-        <div className="max-w-3xl mx-auto min-h-full flex flex-col justify-end">
-          {/* Welcome Message Placeholder if empty */}
+        <div className="max-w-[700px] mx-auto min-h-full flex flex-col justify-end">
           {messages.length === 0 && (
-             <div className="flex-1 flex items-center justify-center text-muted-foreground/40 pb-20">
-               <p>Starting conversation...</p>
-             </div>
+            <div className="flex-1 flex items-center justify-center text-gray-400 pb-20">
+              <p>Starting conversation...</p>
+            </div>
           )}
 
-          {/* Messages List */}
-          <div className="space-y-2 pb-4">
+          <div className="space-y-4 pb-4">
             <AnimatePresence initial={false}>
               {messages.map((msg) => (
                 <ChatMessage 
@@ -112,18 +136,16 @@ export default function ChatPage() {
               ))}
             </AnimatePresence>
             
-            {/* Loading Indicator */}
             {sendMessageMutation.isPending && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex justify-start mb-6"
+                className="flex justify-start"
               >
                 <TypingIndicator />
               </motion.div>
             )}
 
-            {/* Completion Screen */}
             {isCompleted && extractedData && (
               <CompletionScreen data={extractedData} />
             )}
@@ -133,13 +155,13 @@ export default function ChatPage() {
         </div>
       </main>
 
-      {/* Input Area - Hidden when completed */}
+      {/* Input Area */}
       {!isCompleted && (
-        <footer className="flex-none bg-white border-t border-border p-4 md:p-6">
-          <div className="max-w-3xl mx-auto">
+        <footer className="flex-none bg-white border-t border-gray-200 p-4 md:p-6">
+          <div className="max-w-[700px] mx-auto">
             <form 
               onSubmit={handleSend}
-              className="relative flex items-center gap-2 bg-muted/30 p-2 rounded-2xl border border-border focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/5 transition-all duration-200"
+              className="relative flex items-center gap-3"
             >
               <input
                 type="text"
@@ -147,22 +169,19 @@ export default function ChatPage() {
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your answer..."
                 disabled={sendMessageMutation.isPending}
-                className="flex-1 bg-transparent border-none px-4 py-3 text-base focus:outline-none placeholder:text-muted-foreground/60"
+                className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:border-[#00B4C4] focus:ring-2 focus:ring-[#00B4C4]/20 transition-brand placeholder:text-gray-400"
                 data-testid="input-chat-message"
                 autoFocus
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim() || sendMessageMutation.isPending}
-                className="p-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow hover:scale-105 active:scale-95"
+                className="p-3 bg-[#00B4C4] text-white rounded-lg hover:bg-[#0099A8] disabled:opacity-50 disabled:cursor-not-allowed transition-brand shadow-cyan hover:shadow-cyan-lg"
                 data-testid="button-send-message"
               >
                 <Send className="w-5 h-5" />
               </button>
             </form>
-            <p className="text-center text-xs text-muted-foreground mt-3">
-              Press Enter to send
-            </p>
           </div>
         </footer>
       )}

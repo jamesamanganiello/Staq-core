@@ -5,31 +5,41 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
 
-  /* Staq Teal color palette */
-  --background: 180 20% 98%;
-  --foreground: 192 30% 15%;
+  /* STAQ Brand Colors */
+  --staq-bright-cyan: 186 100% 45%;   /* #00D4E8 - highlights, hover states, accents */
+  --staq-primary-cyan: 185 100% 38%;  /* #00B4C4 - primary buttons, links */
+  --staq-deep-cyan: 184 100% 33%;     /* #0099A8 - shadows, button hover */
+  --staq-midnight: 240 28% 14%;       /* #1A1A2E - dark backgrounds, headlines */
+  --staq-light-gray: 210 17% 98%;     /* #F8F9FA - subtle backgrounds */
+  --staq-soft-cyan: 186 100% 97%;     /* #F0FDFF - chat background */
+  --staq-success: 160 84% 39%;        /* #10B981 - success states */
+
+  /* Semantic color mappings */
+  --background: 0 0% 100%;
+  --foreground: var(--staq-midnight);
 
   --card: 0 0% 100%;
-  --card-foreground: 192 30% 15%;
+  --card-foreground: var(--staq-midnight);
   --card-border: 187 25% 88%;
   
   --popover: 0 0% 100%;
-  --popover-foreground: 192 30% 15%;
+  --popover-foreground: var(--staq-midnight);
   --popover-border: 187 25% 88%;
 
-  --primary: 187 55% 52%;
+  --primary: var(--staq-primary-cyan);
   --primary-foreground: 0 0% 100%;
+  --primary-hover: var(--staq-deep-cyan);
 
-  --secondary: 187 30% 94%;
-  --secondary-foreground: 192 30% 20%;
+  --secondary: var(--staq-light-gray);
+  --secondary-foreground: var(--staq-midnight);
 
-  --muted: 187 20% 95%;
-  --muted-foreground: 192 15% 45%;
+  --muted: var(--staq-light-gray);
+  --muted-foreground: 215 14% 34%;
 
-  --accent: 184 60% 45%;
+  --accent: var(--staq-bright-cyan);
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84.2% 60.2%;
@@ -37,35 +47,37 @@
 
   --border: 187 25% 88%;
   --input: 187 25% 88%;
-  --ring: 187 55% 52%;
+  --ring: var(--staq-primary-cyan);
 
-  --sidebar: 192 25% 97%;
-  --sidebar-foreground: 192 30% 15%;
-  --sidebar-border: 187 25% 88%;
-  --sidebar-primary: 187 55% 52%;
+  --sidebar: var(--staq-midnight);
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-border: 240 20% 20%;
+  --sidebar-primary: var(--staq-primary-cyan);
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 187 30% 92%;
-  --sidebar-accent-foreground: 192 30% 20%;
-  --sidebar-ring: 187 55% 52%;
+  --sidebar-accent: 240 20% 20%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-ring: var(--staq-primary-cyan);
 
-  --chart-1: 187 55% 52%;
-  --chart-2: 184 60% 45%;
-  --chart-3: 190 50% 60%;
+  --chart-1: var(--staq-primary-cyan);
+  --chart-2: var(--staq-deep-cyan);
+  --chart-3: var(--staq-bright-cyan);
   --chart-4: 182 45% 40%;
   --chart-5: 195 40% 35%;
   
-  --radius: 0.75rem;
+  --radius: 0.5rem;
 }
 
 @layer base {
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
+    line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply font-bold tracking-tight text-foreground;
+    @apply font-bold text-foreground;
+    letter-spacing: -0.025em;
   }
 }
 
@@ -83,19 +95,93 @@
   @apply bg-muted-foreground/40;
 }
 
-/* Typing indicator animation */
+/* Typing indicator animation - uses brand cyan colors */
 .typing-dot {
   animation: typing 1.4s infinite ease-in-out both;
 }
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes typing {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+.typing-dot:nth-child(1) { 
+  animation-delay: -0.32s;
+  background-color: hsl(var(--staq-bright-cyan));
+}
+.typing-dot:nth-child(2) { 
+  animation-delay: -0.16s;
+  background-color: hsl(var(--staq-primary-cyan));
+}
+.typing-dot:nth-child(3) { 
+  background-color: hsl(var(--staq-deep-cyan));
 }
 
-/* Glassmorphism utilities */
-.glass-panel {
-  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Brand utilities */
+.bg-midnight {
+  background-color: hsl(var(--staq-midnight));
+}
+.bg-soft-cyan {
+  background-color: hsl(var(--staq-soft-cyan));
+}
+.bg-light-gray {
+  background-color: hsl(var(--staq-light-gray));
+}
+.text-midnight {
+  color: hsl(var(--staq-midnight));
+}
+.border-deep-cyan {
+  border-color: hsl(var(--staq-deep-cyan));
+}
+
+/* Brand shadow utility */
+.shadow-cyan {
+  box-shadow: 0 4px 14px -3px hsl(var(--staq-deep-cyan) / 0.25);
+}
+.shadow-cyan-lg {
+  box-shadow: 0 10px 40px -10px hsl(var(--staq-deep-cyan) / 0.35);
+}
+
+/* Smooth transitions for all interactive elements */
+.transition-brand {
+  transition: all 0.2s ease;
+}
+
+/* Chat message bubbles */
+.message-staq {
+  @apply bg-white rounded-lg shadow-sm;
+  border-radius: 8px;
+}
+.message-user {
+  background-color: hsl(var(--staq-primary-cyan));
+  color: white;
+  border-radius: 8px;
+}
+
+/* Progress bar gradient */
+.progress-gradient {
+  background: linear-gradient(
+    90deg, 
+    hsl(var(--staq-bright-cyan)) 0%, 
+    hsl(var(--staq-primary-cyan)) 50%, 
+    hsl(var(--staq-deep-cyan)) 100%
+  );
+}
+
+/* Admin status badges */
+.status-completed {
+  background-color: hsl(var(--staq-success) / 0.1);
+  color: hsl(var(--staq-success));
+}
+.status-in-progress {
+  background-color: hsl(var(--staq-primary-cyan) / 0.1);
+  color: hsl(var(--staq-primary-cyan));
+}
+.status-abandoned {
+  background-color: hsl(215 14% 34% / 0.1);
+  color: hsl(215 14% 34%);
+}
+
+/* Table row hover */
+.table-row-hover:hover {
+  background-color: hsl(var(--staq-soft-cyan));
 }

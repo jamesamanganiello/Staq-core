@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
-import { Bot, User } from "lucide-react";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -11,10 +10,8 @@ interface ChatMessageProps {
 export function ChatMessage({ role, content }: ChatMessageProps) {
   const isUser = role === "user";
 
-  // Clean content: remove system markers like ANALYSIS_COMPLETE if they leak through
   const cleanContent = content.replace("ANALYSIS_COMPLETE", "").trim();
 
-  // If content is empty after cleaning (e.g. only system markers were present), don't render empty bubble
   if (!cleanContent) return null;
 
   return (
@@ -23,7 +20,7 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        "flex w-full mb-6",
+        "flex w-full",
         isUser ? "justify-end" : "justify-start"
       )}
     >
@@ -31,29 +28,27 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
         "flex max-w-[85%] md:max-w-[75%]",
         isUser ? "flex-row-reverse" : "flex-row"
       )}>
-        {/* Avatar */}
-        <div className={cn(
-          "flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center shadow-sm mt-1",
-          isUser 
-            ? "ml-3 bg-primary text-primary-foreground" 
-            : "mr-3 bg-white text-primary border border-primary/20"
-        )}>
-          {isUser ? <User size={14} /> : <Bot size={16} />}
-        </div>
+        {/* Staq Icon for assistant messages */}
+        {!isUser && (
+          <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-midnight flex items-center justify-center shadow-sm mr-3 mt-1">
+            <img src="/images/staq-logo.png" alt="Staq" className="w-4 h-4 brightness-0 invert" />
+          </div>
+        )}
 
-        {/* Bubble */}
+        {/* Message Bubble */}
         <div
           className={cn(
-            "p-4 shadow-sm text-sm md:text-base leading-relaxed break-words",
+            "p-4 text-sm md:text-base leading-relaxed break-words",
             isUser
-              ? "bg-primary text-primary-foreground rounded-2xl rounded-tr-none"
-              : "bg-white border border-border/50 text-foreground rounded-2xl rounded-tl-none"
+              ? "message-user rounded-lg rounded-br-sm"
+              : "message-staq shadow-sm rounded-lg rounded-bl-sm"
           )}
+          data-testid={isUser ? "message-user" : "message-assistant"}
         >
           {isUser ? (
             <p>{cleanContent}</p>
           ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-muted/50 prose-pre:p-2 prose-pre:rounded-lg">
+            <div className="prose prose-sm max-w-none prose-p:leading-relaxed prose-p:my-1 prose-headings:text-midnight prose-strong:text-midnight">
               <ReactMarkdown>{cleanContent}</ReactMarkdown>
             </div>
           )}

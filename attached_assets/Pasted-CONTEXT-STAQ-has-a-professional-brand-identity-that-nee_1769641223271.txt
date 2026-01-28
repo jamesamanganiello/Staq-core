@@ -1,0 +1,134 @@
+CONTEXT:
+STAQ has a professional brand identity that needs to be applied across the platform. The current design is bland and doesn't reflect our brand. I'm providing the complete design system below.
+
+GOAL:
+Redesign the landing page and chat interface to match our brand identity. Make it feel premium, trustworthy, and visually distinctive.
+
+## STAQ BRAND DESIGN SYSTEM
+
+### Color Palette (use these exact values)
+- Bright Cyan: #00D4E8 (highlights, hover states, accents)
+- Primary Cyan: #00B4C4 (primary buttons, links, logo)
+- Deep Cyan: #0099A8 (shadows, depth, secondary elements, button hover states)
+- Midnight: #1A1A2E (dark backgrounds, headlines, contrast sections)
+- White: #FFFFFF (backgrounds, cards)
+- Light Gray: #F8F9FA (subtle backgrounds)
+- Soft Cyan Tint: #F0FDFF (chat background)
+
+### Typography
+- Headlines: Bold (700), tight letter-spacing (-1px or -2px)
+- Body: Regular (400), comfortable line-height (1.6)
+- Use system-ui, sans-serif font stack
+
+### Spacing & Radius
+- Border radius: 8px for cards, 6px for buttons, 4px for small elements
+- Consistent padding: 16px, 24px, 32px, 48px scale
+
+---
+
+## LANDING PAGE REDESIGN
+
+### Hero Section (Midnight background)
+- Background: Midnight (#1A1A2E)
+- Headline: White, large, bold
+- Subheadline: Light gray or Bright Cyan (#00D4E8)
+- CTA Button: Primary Cyan (#00B4C4) background, white text
+  - Hover: Deep Cyan (#0099A8)
+  - Subtle scale transform on hover (1.02)
+- Add subtle gradient or glow effect behind the button
+
+### Value Props Section (White background)
+- Background: White
+- Section padding: 80px top/bottom
+- Cards: White with subtle shadow, add a 4px left border in Deep Cyan (#0099A8)
+- Card headlines: Midnight (#1A1A2E)
+- Card body text: Gray (#4A5568)
+- Icons: Primary Cyan (#00B4C4)
+
+### How It Works Section (Light Gray background #F8F9FA)
+- Three steps with numbered circles
+- Circle numbers: Midnight background, white text
+- Connecting line between steps in Primary Cyan
+
+### Footer
+- Background: Midnight (#1A1A2E)
+- Text: White and gray
+- Admin link: Small, muted gray, right-aligned
+- Copyright: Left-aligned
+
+### General
+- Add subtle hover animations to all interactive elements
+- Use Deep Cyan at 10% opacity for box shadows
+- Ensure strong contrast between sections
+
+---
+
+## CHAT INTERFACE REDESIGN
+
+### Header Bar (add this - currently missing)
+- Background: Midnight (#1A1A2E)
+- Staq logo on left (white version)
+- "GTM Stack Audit" label in gray
+- Small "X" or back arrow to exit on right
+
+### Chat Container
+- Background: Soft Cyan Tint (#F0FDFF)
+- Chat messages in a centered container (max-width 700px)
+- Padding around the chat area
+
+### Message Bubbles
+- Staq messages: White background, subtle shadow, 8px radius
+  - Small Staq icon (the stacked bars) to the left of the bubble
+- User messages: Primary Cyan (#00B4C4) background, white text, 8px radius
+  - Aligned to the right
+
+### Input Area
+- Sticky at bottom
+- White background with subtle top border
+- Input field: Light border, 8px radius
+- Send button: Primary Cyan, icon or "Send" text
+
+### Progress Indicator (add this - currently missing)
+- Below the header: "Step 2 of 6" or a subtle progress bar
+- Use the three-tier cyan gradient (Bright → Primary → Deep) for the progress bar fill
+
+### Typing Indicator
+- When waiting for Staq's response, show three animated dots
+- Use the cyan colors for the dots
+
+---
+
+## COMPLETION SCREEN
+
+- Centered card on Soft Cyan Tint background
+- White card with subtle shadow
+- Green checkmark icon at top (use #10B981 for success green)
+- Headline: "You're all set, [name]!" in Midnight
+- Steps list with numbered circles (Midnight background)
+- CTA Button: Primary Cyan, full-width, prominent
+  - "Schedule Your Screen Share →"
+- Subtle celebration animation (optional - confetti or pulse on the checkmark)
+
+---
+
+## ADMIN PANEL
+
+Keep it clean and functional, but apply brand:
+- Header bar: Midnight background, white Staq logo
+- Sidebar or tabs: Use Midnight for active state, gray for inactive
+- Status badges:
+  - Completed: Green (#10B981)
+  - In Progress: Primary Cyan (#00B4C4)
+  - Abandoned: Gray (#9CA3AF)
+- Tables: Clean with subtle row hover (Soft Cyan Tint)
+- Action buttons: Primary Cyan
+
+---
+
+TECHNICAL NOTES:
+- Apply these styles consistently using CSS variables or Tailwind config
+- Ensure mobile responsive
+- Test contrast ratios for accessibility
+- Add smooth transitions (0.2s ease) to all hover states
+
+Make it feel premium—like a product people would pay $750 for.
