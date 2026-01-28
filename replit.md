@@ -57,6 +57,15 @@ Key endpoints:
 - **Views**:
   - `admin_intake_summary` - Admin dashboard view joining customers with conversation data
 
+### Admin Panel
+- **Route**: `/admin` (login page), `/admin/dashboard` (sessions list), `/admin/sessions/:id` (detail view)
+- **Authentication**: Password-protected via `ADMIN_PASSWORD` environment variable, session-based (24-hour cookie)
+- **Features**:
+  - Sessions list with status filtering (completed/in-progress/abandoned)
+  - Session detail with 4 tabs: Transcript, Extracted Data, Preliminary Analysis, Admin Notes
+  - Auto-saving notes with timestamp
+  - Export transcript as text file
+
 ### AI Conversation Design
 The Claude system prompt (v2.0.0, 2026-01-28) implements:
 - Natural conversation flow covering: company context → CRM → tool inventory → integrations → pain points → attribution → logistics
