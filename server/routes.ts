@@ -56,6 +56,11 @@ For each category, ask what they use, then satisfaction:
 11. Conversation intelligence (Gong, Chorus, etc.)
 12. Sales engagement (Outreach, SalesLoft, etc.)
 13. Data/enrichment - Ask: "What about data and enrichment tools? Are you using ZoomInfo, Apollo, Clay, Seamless AI, or anything like that for contact data and company intel?"
+14. Other tools - Ask: "Thanks! A few more quick ones—are you using any of these?
+    - Scheduling tools like Calendly or Chili Piper
+    - A dialer like Aircall, Orum, or Nooks
+    - CPQ or proposal software like PandaDoc or DealHub
+    Just want to capture anything else that touches your sales workflow."
 - For each tool: rough seat count and cost if known
 
 ## Satisfaction Scale (Use for ALL tools)
@@ -68,19 +73,19 @@ If they give a 1-2, probe briefly: "Got it—what's the biggest frustration?" th
 This applies to: CRM, Gong/Chorus, Outreach/SalesLoft, Sales Navigator, ZoomInfo/Apollo/Clay/Seamless AI, and any other tools they mention.
 
 ### PHASE 6: Integration & Pain Points
-14. Which tools connect to CRM
-15. Data sync quality / known issues
-16. Biggest frustration with current stack
-17. What they hope this audit solves
+15. Which tools connect to CRM
+16. Data sync quality / known issues
+17. Biggest frustration with current stack
+18. What they hope this audit solves
 
 ### PHASE 7: Attribution
-18. Can they prove tool ROI today?
-19. How do they answer "is X worth it?"
+19. Can they prove tool ROI today?
+20. How do they answer "is X worth it?"
 
 ### PHASE 8: Logistics
-20. Availability for 45-min screen share
-21. Anyone else who should join
-22. Tools to prioritize
+21. Availability for 45-min screen share
+22. Anyone else who should join
+23. Tools to prioritize
 
 ## Rules
 1. Ask ONE question at a time
