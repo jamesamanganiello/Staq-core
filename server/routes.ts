@@ -226,50 +226,54 @@ export async function registerRoutes(
 
       const assistantText = response.content[0].type === 'text' ? response.content[0].text : "";
 
-      // Check for completion
+      // Check for completion - detect JSON block in response
       let isComplete = false;
       let extractedData = null;
       let preliminaryAnalysis = null;
       let displayMessage = assistantText;
 
-      if (assistantText.includes("INTAKE_COMPLETE")) {
+      // Extract JSON from the response (completion indicator)
+      const jsonMatch = assistantText.match(/```json\n([\s\S]*?)\n```/);
+      if (jsonMatch) {
         isComplete = true;
         
-        // Extract JSON from the response
-        const jsonMatch = assistantText.match(/```json\n([\s\S]*?)\n```/);
-        if (jsonMatch) {
-          try {
-            const fullData = JSON.parse(jsonMatch[1]);
-            
-            // Separate preliminary_analysis (admin-only) from customer data
-            preliminaryAnalysis = fullData.preliminary_analysis || null;
-            delete fullData.preliminary_analysis;
-            extractedData = fullData;
-            
-            // Clean up message for display (remove JSON and marker)
-            displayMessage = assistantText
-              .replace(/```json\n[\s\S]*?\n```/, "")
-              .replace("INTAKE_COMPLETE", "")
-              .trim();
-            
-            // Create or update customer record (using new JSON structure)
-            const customer = await storage.createCustomer({
-              contactName: extractedData?.company_context?.name || extractedData?.contact?.name,
-              contactEmail: extractedData?.logistics?.contact_email || extractedData?.contact?.email,
-              companyName: extractedData?.company_context?.name || extractedData?.company?.name,
-            });
-            
-            // Update conversation log with customer link and completion data
-            await storage.updateConversationLog(conversationLog.id, {
-              customerId: customer.id,
-              status: "completed",
-              completedAt: new Date(),
-              extractedData: extractedData,
-              preliminaryAnalysis: preliminaryAnalysis,
-            });
-          } catch (e) {
-            console.error("Failed to parse extracted data JSON", e);
+        try {
+          const fullData = JSON.parse(jsonMatch[1]);
+          
+          // Separate preliminary_analysis (admin-only) from customer data
+          preliminaryAnalysis = fullData.preliminary_analysis || null;
+          delete fullData.preliminary_analysis;
+          extractedData = fullData;
+          
+          // Clean up message for display - remove JSON block completely
+          // Keep only the closing statement before the JSON
+          displayMessage = assistantText
+            .replace(/```json\n[\s\S]*?\n```/g, "")
+            .replace("INTAKE_COMPLETE", "")
+            .trim();
+          
+          // If nothing left after removing JSON, provide a default closing
+          if (!displayMessage) {
+            displayMessage = "Perfect! That gives me everything I need to prep for our call.";
           }
+          
+          // Create or update customer record (using new JSON structure)
+          const customer = await storage.createCustomer({
+            contactName: extractedData?.contact?.name,
+            contactEmail: extractedData?.contact?.email,
+            companyName: extractedData?.company_context?.name,
+          });
+          
+          // Update conversation log with customer link and completion data
+          await storage.updateConversationLog(conversationLog.id, {
+            customerId: customer.id,
+            status: "completed",
+            completedAt: new Date(),
+            extractedData: extractedData,
+            preliminaryAnalysis: preliminaryAnalysis,
+          });
+        } catch (e) {
+          console.error("Failed to parse extracted data JSON", e);
         }
       }
 
@@ -306,7 +310,25 @@ export async function registerRoutes(
       return res.status(404).json({ message: "Session not found" });
     }
     
-    const messages = await storage.getMessages(result.log.id);
+    const rawMessages = await storage.getMessages(result.log.id);
+    
+    // Filter out JSON blocks from assistant messages for display
+    const messages = rawMessages.map(msg => {
+      if (msg.role === "assistant" && msg.content.includes("```json")) {
+        let cleanContent = msg.content
+          .replace(/```json\n[\s\S]*?\n```/g, "")
+          .replace("INTAKE_COMPLETE", "")
+          .trim();
+        
+        // If nothing left, provide default closing
+        if (!cleanContent) {
+          cleanContent = "Perfect! That gives me everything I need to prep for our call.";
+        }
+        
+        return { ...msg, content: cleanContent };
+      }
+      return msg;
+    });
     
     // Filter out admin-only data (preliminaryAnalysis) before sending to client
     const { preliminaryAnalysis, ...safeConversation } = result.log;
