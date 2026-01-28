@@ -58,12 +58,13 @@ Key endpoints:
   - `admin_intake_summary` - Admin dashboard view joining customers with conversation data
 
 ### AI Conversation Design
-The Claude system prompt implements:
-- Phased question flow (welcome → contact → company → sales motion → tools → scheduling)
-- Skip logic based on previous answers
-- URL extraction and confirmation
-- Tool satisfaction ratings (1-5 scale, except CRM)
-- JSON summary generation upon completion
+The Claude system prompt (v2.0.0, 2026-01-28) implements:
+- Natural conversation flow covering: company context → CRM → tool inventory → integrations → pain points → attribution → logistics
+- Skip logic based on previous answers (e.g., don't ask about Salesforce if they use HubSpot)
+- Collects seat counts and costs for each tool when known
+- Generates estimated health score (0-100) in preliminary analysis
+- JSON summary with company_context, crm, tools[], integrations, pain_points, attribution_readiness, logistics
+- Version tracking logged at server startup
 
 ### Shared Code Structure
 The `shared/` directory contains code used by both frontend and backend:
