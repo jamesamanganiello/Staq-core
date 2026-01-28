@@ -29,14 +29,9 @@ export default function LandingPage() {
       <section className="bg-midnight text-white">
         {/* Navigation */}
         <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-          <StaqLogo height={40} variant="white" />
-          <button 
-            className="text-sm font-medium text-gray-400 hover:text-white transition-brand"
-            onClick={() => window.open('https://staq.ai', '_blank')}
-            data-testid="link-about"
-          >
-            About Us
-          </button>
+          <a href="/" data-testid="link-home">
+            <StaqLogo height={40} variant="white" />
+          </a>
         </nav>
 
         {/* Hero Content */}
