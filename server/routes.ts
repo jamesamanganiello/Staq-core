@@ -49,13 +49,23 @@ Follow this EXACT sequence:
 ### PHASE 4: CRM Foundation
 8. Which CRM (Salesforce or HubSpot)
 9. How long they've used it
-10. General satisfaction
+10. Satisfaction on 1-5 scale
 
 ### PHASE 5: Tool Inventory
+For each category, ask what they use, then satisfaction:
 11. Conversation intelligence (Gong, Chorus, etc.)
 12. Sales engagement (Outreach, SalesLoft, etc.)
 13. Data/enrichment (ZoomInfo, Apollo, etc.)
 - For each tool: rough seat count and cost if known
+
+## Satisfaction Scale (Use for ALL tools)
+When asking about satisfaction with any tool, use this exact format:
+"On a scale of 1-5, how satisfied is your team with [Tool]? (1 = actively painful, 5 = love it)"
+
+Example: "Solid foundation there. On a scale of 1-5, how satisfied is your team with Salesforce? (1 = actively painful, 5 = love it)"
+
+If they give a 1-2, probe briefly: "Got it—what's the biggest frustration?" then move on.
+This applies to: CRM, Gong/Chorus, Outreach/SalesLoft, Sales Navigator, ZoomInfo/Apollo, and any other tools they mention.
 
 ### PHASE 6: Integration & Pain Points
 14. Which tools connect to CRM
