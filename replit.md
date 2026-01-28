@@ -51,8 +51,11 @@ Key endpoints:
 - **ORM**: Drizzle ORM with PostgreSQL dialect
 - **Schema Location**: shared/schema.ts
 - **Tables**:
-  - `conversations` - Stores session data, customer info, extracted data, and preliminary analysis
-  - `messages` - Stores individual chat messages with role and content
+  - `customers` - Customer records (id, company_name, contact_name, contact_email, created_at)
+  - `conversation_logs` - Intake sessions (id, customer_id FK, session_id, full_transcript, extracted_data, preliminary_analysis, status, started_at, completed_at)
+  - `messages` - Individual chat messages (id, conversation_log_id FK, role, content, created_at)
+- **Views**:
+  - `admin_intake_summary` - Admin dashboard view joining customers with conversation data
 
 ### AI Conversation Design
 The Claude system prompt implements:

@@ -1,56 +1,68 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // === TABLE DEFINITIONS ===
-export const conversations = pgTable("conversations", {
+
+export const customers = pgTable("customers", {
   id: serial("id").primaryKey(),
-  sessionId: text("session_id").notNull().unique(),
-  
-  // Customer info collected during conversation
-  name: text("name"),
-  email: text("email"),
   companyName: text("company_name"),
-  companyUrl: text("company_url"),
-  
-  // Conversation data
-  conversationLog: jsonb("conversation_log").$type<Array<{role: string, content: string}>>(),
-  extractedData: jsonb("extracted_data"), // Claude's final JSON output (customer-visible data)
-  preliminaryAnalysis: jsonb("preliminary_analysis"), // Admin-only analysis (red_flags, focus_areas, questions)
-  
-  // Status tracking
-  status: text("status").default("in_progress"), // 'in_progress' | 'completed'
+  contactName: text("contact_name"),
+  contactEmail: text("contact_email"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const conversationLogs = pgTable("conversation_logs", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").references(() => customers.id),
+  sessionId: text("session_id").notNull().unique(),
+  fullTranscript: jsonb("full_transcript").$type<Array<{role: string, content: string}>>(),
+  extractedData: jsonb("extracted_data"),
+  preliminaryAnalysis: jsonb("preliminary_analysis"),
+  status: text("status").default("in_progress"),
   startedAt: timestamp("started_at").defaultNow(),
   completedAt: timestamp("completed_at"),
 });
 
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
-  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
-  role: text("role").notNull(), // 'user' | 'assistant'
+  conversationLogId: integer("conversation_log_id").notNull().references(() => conversationLogs.id),
+  role: text("role").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // === RELATIONS ===
-export const conversationsRelations = relations(conversations, ({ many }) => ({
+export const customersRelations = relations(customers, ({ many }) => ({
+  conversationLogs: many(conversationLogs),
+}));
+
+export const conversationLogsRelations = relations(conversationLogs, ({ one, many }) => ({
+  customer: one(customers, {
+    fields: [conversationLogs.customerId],
+    references: [customers.id],
+  }),
   messages: many(messages),
 }));
 
 export const messagesRelations = relations(messages, ({ one }) => ({
-  conversation: one(conversations, {
-    fields: [messages.conversationId],
-    references: [conversations.id],
+  conversationLog: one(conversationLogs, {
+    fields: [messages.conversationLogId],
+    references: [conversationLogs.id],
   }),
 }));
 
-// === BASE SCHEMAS ===
-export const insertConversationSchema = createInsertSchema(conversations).omit({ 
+// === INSERT SCHEMAS ===
+export const insertCustomerSchema = createInsertSchema(customers).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertConversationLogSchema = createInsertSchema(conversationLogs).omit({ 
   id: true, 
   startedAt: true,
   completedAt: true,
-  extractedData: true,
   status: true
 });
 
@@ -59,13 +71,15 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   createdAt: true 
 });
 
-// === EXPLICIT API CONTRACT TYPES ===
-export type Conversation = typeof conversations.$inferSelect;
-export type InsertConversation = z.infer<typeof insertConversationSchema>;
+// === TYPE EXPORTS ===
+export type Customer = typeof customers.$inferSelect;
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+export type ConversationLog = typeof conversationLogs.$inferSelect;
+export type InsertConversationLog = z.infer<typeof insertConversationLogSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
-// Request/Response types
+// === API CONTRACT TYPES ===
 export type StartChatResponse = {
   sessionId: string;
   conversationId: number;
@@ -83,6 +97,7 @@ export type ChatMessageResponse = {
 };
 
 export type ConversationHistoryResponse = {
-  conversation: Conversation;
+  conversation: Omit<ConversationLog, 'preliminaryAnalysis'>;
   messages: Message[];
+  customer: Customer | null;
 };

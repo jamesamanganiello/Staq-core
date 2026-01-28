@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { conversations, messages } from './schema';
+import { conversationLogs, messages, customers } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -13,6 +13,36 @@ export const errorSchemas = {
     message: z.string(),
   }),
 };
+
+// Define message schema for validation
+const messageSchema = z.object({
+  id: z.number(),
+  conversationLogId: z.number(),
+  role: z.string(),
+  content: z.string(),
+  createdAt: z.string().nullable(),
+});
+
+// Define conversation log schema (without preliminaryAnalysis for security)
+const conversationLogSchema = z.object({
+  id: z.number(),
+  customerId: z.number().nullable(),
+  sessionId: z.string(),
+  fullTranscript: z.any().nullable(),
+  extractedData: z.any().nullable(),
+  status: z.string().nullable(),
+  startedAt: z.string().nullable(),
+  completedAt: z.string().nullable(),
+});
+
+// Define customer schema
+const customerSchema = z.object({
+  id: z.number(),
+  companyName: z.string().nullable(),
+  contactName: z.string().nullable(),
+  contactEmail: z.string().nullable(),
+  createdAt: z.string().nullable(),
+});
 
 export const api = {
   chat: {
@@ -48,8 +78,9 @@ export const api = {
       path: '/api/chat/:sessionId',
       responses: {
         200: z.object({
-          conversation: z.custom<typeof conversations.$inferSelect>(),
-          messages: z.array(z.custom<typeof messages.$inferSelect>()),
+          conversation: conversationLogSchema,
+          messages: z.array(messageSchema),
+          customer: customerSchema.nullable(),
         }),
         404: errorSchemas.notFound,
       },

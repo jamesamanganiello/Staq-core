@@ -2,7 +2,6 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
-import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "crypto";
 
@@ -120,21 +119,21 @@ export async function registerRoutes(
     try {
       const sessionId = randomUUID();
 
-      const conversation = await storage.createConversation({
+      const conversationLog = await storage.createConversationLog({
         sessionId,
-        conversationLog: [],
+        fullTranscript: [],
       });
 
       // Store the first assistant message
       await storage.createMessage({
-        conversationId: conversation.id,
+        conversationLogId: conversationLog.id,
         role: "assistant",
         content: FIRST_MESSAGE
       });
 
       res.status(201).json({
         sessionId,
-        conversationId: conversation.id,
+        conversationId: conversationLog.id,
         message: FIRST_MESSAGE,
       });
 
@@ -150,20 +149,20 @@ export async function registerRoutes(
       const { message } = api.chat.message.input.parse(req.body);
       const sessionId = req.params.sessionId as string;
 
-      const conversation = await storage.getConversationBySessionId(sessionId);
-      if (!conversation) {
+      const conversationLog = await storage.getConversationLogBySessionId(sessionId);
+      if (!conversationLog) {
         return res.status(404).json({ message: "Session not found" });
       }
 
       // Store user message
       await storage.createMessage({
-        conversationId: conversation.id,
+        conversationLogId: conversationLog.id,
         role: "user",
         content: message
       });
 
       // Get full conversation history
-      const history = await storage.getMessages(conversation.id);
+      const history = await storage.getMessages(conversationLog.id);
       
       // Format for Anthropic
       const messages = history.map(m => ({
@@ -206,35 +205,39 @@ export async function registerRoutes(
               .replace(/```json\n[\s\S]*?\n```/, "")
               .replace("INTAKE_COMPLETE", "")
               .trim();
+            
+            // Create or update customer record
+            const customer = await storage.createCustomer({
+              contactName: extractedData?.contact?.name,
+              contactEmail: extractedData?.contact?.email,
+              companyName: extractedData?.company?.name,
+            });
+            
+            // Update conversation log with customer link and completion data
+            await storage.updateConversationLog(conversationLog.id, {
+              customerId: customer.id,
+              status: "completed",
+              completedAt: new Date(),
+              extractedData: extractedData,
+              preliminaryAnalysis: preliminaryAnalysis,
+            });
           } catch (e) {
             console.error("Failed to parse extracted data JSON", e);
           }
         }
-        
-        // Update conversation with completion data
-        await storage.updateConversation(conversation.id, {
-          status: "completed",
-          completedAt: new Date(),
-          extractedData: extractedData,
-          preliminaryAnalysis: preliminaryAnalysis,
-          name: extractedData?.contact?.name,
-          email: extractedData?.contact?.email,
-          companyName: extractedData?.company?.name,
-          companyUrl: extractedData?.company?.url,
-        });
       }
 
       // Store assistant message (full text for record)
       await storage.createMessage({
-        conversationId: conversation.id,
+        conversationLogId: conversationLog.id,
         role: "assistant",
         content: assistantText
       });
 
-      // Update conversation log
-      const updatedHistory = await storage.getMessages(conversation.id);
-      await storage.updateConversation(conversation.id, {
-        conversationLog: updatedHistory.map(m => ({ role: m.role, content: m.content }))
+      // Update full transcript
+      const updatedHistory = await storage.getMessages(conversationLog.id);
+      await storage.updateConversationLog(conversationLog.id, {
+        fullTranscript: updatedHistory.map(m => ({ role: m.role, content: m.content }))
       });
 
       res.json({
@@ -252,16 +255,17 @@ export async function registerRoutes(
   // Get conversation history
   app.get(api.chat.history.path, async (req, res) => {
     const sessionId = req.params.sessionId as string;
-    const conversation = await storage.getConversationBySessionId(sessionId);
-    if (!conversation) {
+    const result = await storage.getConversationLogWithCustomer(sessionId);
+    if (!result) {
       return res.status(404).json({ message: "Session not found" });
     }
-    const messages = await storage.getMessages(conversation.id);
+    
+    const messages = await storage.getMessages(result.log.id);
     
     // Filter out admin-only data (preliminaryAnalysis) before sending to client
-    const { preliminaryAnalysis, ...safeConversation } = conversation;
+    const { preliminaryAnalysis, ...safeConversation } = result.log;
     
-    res.json({ conversation: safeConversation, messages });
+    res.json({ conversation: safeConversation, messages, customer: result.customer });
   });
 
   return httpServer;
