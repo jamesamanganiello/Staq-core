@@ -26,7 +26,7 @@ interface CompletionScreenProps {
 const CALENDLY_URL = import.meta.env.VITE_CALENDLY_URL || "https://calendly.com/PLACEHOLDER";
 
 export function CompletionScreen({ data }: CompletionScreenProps) {
-  const name = data?.contact?.name || "there";
+  const name = data?.contact?.name;
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -86,7 +86,7 @@ export function CompletionScreen({ data }: CompletionScreenProps) {
               className="text-2xl md:text-3xl font-display font-bold text-midnight"
               data-testid="text-completion-title"
             >
-              You're all set, {name}!
+              {name ? `You're all set, ${name}!` : "You're all set!"}
             </h2>
             
             <p 
