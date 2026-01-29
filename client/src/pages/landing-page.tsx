@@ -111,8 +111,8 @@ export default function LandingPage() {
               },
               {
                 icon: Layers,
-                title: "Consolidation Opportunities",
-                desc: "Identify overlapping tools to reduce spend and complexity."
+                title: "Maximize Your Stack",
+                desc: "Stop paying for shelfware. Get more from the tools you already own."
               },
               {
                 icon: ShieldCheck,
