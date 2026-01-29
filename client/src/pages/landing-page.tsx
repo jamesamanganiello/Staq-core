@@ -112,7 +112,7 @@ export default function LandingPage() {
               {
                 icon: Layers,
                 title: "Maximize Your Stack",
-                desc: "Stop paying for shelfware. Get more from the tools you already own."
+                desc: "Stop paying for shelfware. Get more from the tools you already own—or honest guidance on when to switch."
               },
               {
                 icon: ShieldCheck,
