@@ -42,13 +42,13 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold tracking-tight mb-6 text-white leading-tight">
-              Is Your Sales Stack <br className="hidden md:block"/>
-              <span className="text-[#00D4E8]">Working For You?</span>
+              Your Stack. Your Side. <br className="hidden md:block"/>
+              <span className="text-[#00D4E8]">Your Call.</span>
             </h1>
             
             <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Get an AI-powered audit of your sales and marketing technology. 
-              Identify redundancies, gaps, and optimization opportunities in minutes.
+              Get the clear, honest analysis you need to optimize spend, 
+              prove ROI, and make confident renewal decisions.
             </p>
 
             <div className="flex flex-col items-center gap-6">
@@ -71,9 +71,14 @@ export default function LandingPage() {
                 </span>
               </button>
               
-              <p className="text-sm text-gray-400">
-                No credit card required • Takes 5-10 minutes
-              </p>
+              <div className="text-center">
+                <p className="text-base font-medium text-white mb-1">
+                  The only advisor with zero vendor ties.
+                </p>
+                <p className="text-sm text-gray-400">
+                  No credit card required • Takes 5-10 minutes
+                </p>
+              </div>
             </div>
           </motion.div>
         </div>
