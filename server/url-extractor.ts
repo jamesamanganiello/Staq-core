@@ -12,13 +12,67 @@ interface ExtractedContent {
   error?: string;
 }
 
+const BLOCKED_IP_RANGES = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2[0-9]|3[01])\./,
+  /^192\.168\./,
+  /^0\./,
+  /^169\.254\./,
+  /^::1$/,
+  /^fc00:/,
+  /^fe80:/,
+  /^localhost$/i,
+];
+
+function isBlockedHost(hostname: string): boolean {
+  return BLOCKED_IP_RANGES.some(pattern => pattern.test(hostname));
+}
+
 export async function extractWebsiteContent(url: string): Promise<ExtractedContent> {
   let normalizedUrl = url.trim();
-  if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-    normalizedUrl = 'https://' + normalizedUrl;
-  }
+  let domain: string;
 
-  const domain = new URL(normalizedUrl).hostname.replace('www.', '');
+  try {
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = 'https://' + normalizedUrl;
+    }
+
+    const parsedUrl = new URL(normalizedUrl);
+    
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return {
+        success: false,
+        url: normalizedUrl,
+        domain: url,
+        headings: [],
+        mainContent: [],
+        error: 'Invalid protocol - only HTTP/HTTPS allowed',
+      };
+    }
+
+    if (isBlockedHost(parsedUrl.hostname)) {
+      return {
+        success: false,
+        url: normalizedUrl,
+        domain: parsedUrl.hostname,
+        headings: [],
+        mainContent: [],
+        error: 'Cannot fetch internal/private URLs',
+      };
+    }
+
+    domain = parsedUrl.hostname.replace('www.', '');
+  } catch (e: any) {
+    return {
+      success: false,
+      url: normalizedUrl,
+      domain: url,
+      headings: [],
+      mainContent: [],
+      error: 'Invalid URL format',
+    };
+  }
 
   try {
     const response = await axios.get(normalizedUrl, {
@@ -29,6 +83,7 @@ export async function extractWebsiteContent(url: string): Promise<ExtractedConte
         'Accept-Language': 'en-US,en;q=0.5',
       },
       maxRedirects: 5,
+      maxContentLength: 5 * 1024 * 1024,
     });
 
     const $ = cheerio.load(response.data);

@@ -295,24 +295,37 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Session not found" });
       }
 
-      // Detect URLs in the message and extract website content
+      // Detect URLs in the message - look for company website URLs
       const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][-a-zA-Z0-9]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s]*)?/gi;
       const urls = message.match(urlRegex);
       let websiteContext = "";
       
-      if (urls && urls.length > 0) {
-        // Extract content from the first URL found
+      // Get conversation history to check if we're in the company context phase
+      const existingHistory = await storage.getMessages(conversationLog.id);
+      const isEarlyConversation = existingHistory.length < 10;
+      const lastAssistantMessage = existingHistory.filter(m => m.role === 'assistant').pop()?.content || '';
+      const askedForUrl = /url|website|company|domain/i.test(lastAssistantMessage);
+      
+      // Only fetch URLs if we're early in conversation or explicitly asked for company URL
+      if (urls && urls.length > 0 && (isEarlyConversation || askedForUrl)) {
         const url = urls[0];
-        console.log(`[URL Extractor] Fetching content from: ${url}`);
         
-        const extracted = await extractWebsiteContent(url);
+        // Skip common non-company URLs
+        const skipDomains = ['calendly.com', 'google.com', 'linkedin.com', 'twitter.com', 'facebook.com', 'youtube.com', 'zoom.us'];
+        const isSkippedDomain = skipDomains.some(domain => url.toLowerCase().includes(domain));
         
-        if (extracted.success) {
-          websiteContext = `\n\n[WEBSITE CONTENT EXTRACTED - USE THIS FOR COMPANY CONTEXT]\n${formatExtractedContent(extracted)}\n[END WEBSITE CONTENT]`;
-          console.log(`[URL Extractor] Successfully extracted content from ${extracted.domain}`);
-        } else {
-          websiteContext = `\n\n[WEBSITE FETCH FAILED for ${extracted.domain}]\nCould not extract website content. Ask the user: "I couldn't pull details from that URL—can you give me the quick pitch? What does your company sell and who's your target customer?"\n[END WEBSITE CONTENT]`;
-          console.log(`[URL Extractor] Failed to fetch ${url}: ${extracted.error}`);
+        if (!isSkippedDomain) {
+          console.log(`[URL Extractor] Fetching content from: ${url}`);
+          
+          const extracted = await extractWebsiteContent(url);
+          
+          if (extracted.success) {
+            websiteContext = `\n\n[WEBSITE CONTENT EXTRACTED - USE THIS FOR COMPANY CONTEXT]\n${formatExtractedContent(extracted)}\n[END WEBSITE CONTENT]`;
+            console.log(`[URL Extractor] Successfully extracted content from ${extracted.domain}`);
+          } else {
+            websiteContext = `\n\n[WEBSITE FETCH FAILED for ${extracted.domain}]\nCould not extract website content. Ask the user: "I couldn't pull details from that URL—can you give me the quick pitch? What does your company sell and who's your target customer?"\n[END WEBSITE CONTENT]`;
+            console.log(`[URL Extractor] Failed to fetch ${url}: ${extracted.error}`);
+          }
         }
       }
 
