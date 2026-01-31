@@ -23,7 +23,7 @@ interface CompletionScreenProps {
   };
 }
 
-const CALENDLY_URL = import.meta.env.VITE_CALENDLY_URL || "https://calendly.com/PLACEHOLDER";
+const CALENDLY_URL = import.meta.env.VITE_CALENDLY_URL || "https://calendly.com/joshua-alecbrooker/30min";
 
 export function CompletionScreen({ data }: CompletionScreenProps) {
   const name = data?.contact?.name;
