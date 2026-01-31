@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import Anthropic from "@anthropic-ai/sdk";
 import { randomUUID } from "crypto";
+import { extractWebsiteContent, formatExtractedContent } from "./url-extractor";
 
 const anthropic = new Anthropic({
   apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || "dummy",
@@ -11,7 +12,7 @@ const anthropic = new Anthropic({
 });
 
 // System prompt version tracking
-const PROMPT_VERSION = "2.4.1";
+const PROMPT_VERSION = "2.5.0";
 const PROMPT_UPDATED = "2026-01-31";
 
 const SYSTEM_PROMPT = `You are Staq, an AI assistant conducting an intake conversation for a GTM tech stack health check. Your goal is to gather the information needed to prepare for a screen share audit while making the conversation feel natural and expert-level.
@@ -32,15 +33,19 @@ Follow this EXACT sequence:
 
 ### PHASE 2: Company Context (Smart)
 4. Company URL
-5. When they provide URL, extract and present:
-   - Company name
-   - What they sell (product/service)
-   - Target customer (SMB, mid-market, enterprise, or specific industry)
-   - Industry vertical (SaaS, FinTech, HR Tech, etc.)
+5. When they provide a URL, LOOK FOR [WEBSITE CONTENT EXTRACTED] in your context:
+   - If website content is provided, USE IT to accurately describe their company
+   - Present what you found: company name, what they sell, target customer, industry
+   - Always confirm: "Does that sound right?"
    
    Example: "Got it—looks like Bennie is a B2B HR Tech company providing employee benefits solutions. Seems like you sell to SMBs and mid-market companies looking to simplify benefits administration. Does that sound right?"
    
-   IMPORTANT: If you cannot confidently determine the target customer or industry vertical from the URL, don't guess—ask as a follow-up question instead.
+   CRITICAL: If website fetch FAILED (you'll see [WEBSITE FETCH FAILED]):
+   - Do NOT guess what the company does
+   - Ask directly: "I couldn't pull details from that URL—can you give me the quick pitch? What does your company sell and who's your target customer?"
+   
+   CRITICAL: If you don't have extracted website content and can't determine details confidently:
+   - Don't guess—ask as a follow-up question instead
 
 ### PHASE 3: Sales Team
 6. Sales team size
@@ -290,6 +295,27 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Session not found" });
       }
 
+      // Detect URLs in the message and extract website content
+      const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][-a-zA-Z0-9]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s]*)?/gi;
+      const urls = message.match(urlRegex);
+      let websiteContext = "";
+      
+      if (urls && urls.length > 0) {
+        // Extract content from the first URL found
+        const url = urls[0];
+        console.log(`[URL Extractor] Fetching content from: ${url}`);
+        
+        const extracted = await extractWebsiteContent(url);
+        
+        if (extracted.success) {
+          websiteContext = `\n\n[WEBSITE CONTENT EXTRACTED - USE THIS FOR COMPANY CONTEXT]\n${formatExtractedContent(extracted)}\n[END WEBSITE CONTENT]`;
+          console.log(`[URL Extractor] Successfully extracted content from ${extracted.domain}`);
+        } else {
+          websiteContext = `\n\n[WEBSITE FETCH FAILED for ${extracted.domain}]\nCould not extract website content. Ask the user: "I couldn't pull details from that URL—can you give me the quick pitch? What does your company sell and who's your target customer?"\n[END WEBSITE CONTENT]`;
+          console.log(`[URL Extractor] Failed to fetch ${url}: ${extracted.error}`);
+        }
+      }
+
       // Store user message
       await storage.createMessage({
         conversationLogId: conversationLog.id,
@@ -306,11 +332,16 @@ export async function registerRoutes(
         content: m.content
       }));
 
+      // Augment system prompt with website context if available
+      const augmentedPrompt = websiteContext 
+        ? SYSTEM_PROMPT + websiteContext 
+        : SYSTEM_PROMPT;
+
       // Call Claude with full history
       const response = await anthropic.messages.create({
         model: "claude-sonnet-4-5",
         max_tokens: 2048,
-        system: SYSTEM_PROMPT,
+        system: augmentedPrompt,
         messages: messages,
       });
 
