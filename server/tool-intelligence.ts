@@ -595,6 +595,137 @@ Save diagnostic depth for the screen share.
 - If CRM = HubSpot → Skip ALL Salesforce questions
 - If CRM = "Other" → Note as finding, skip CRM-specific probes
 `
+  },
+
+  hubspot: {
+    toolName: "HubSpot",
+    category: "crm",
+    triggers: ["hubspot", "hub spot", "hs crm"],
+    promptContent: `
+### HubSpot (CRM Foundation) - TEASE LAYER
+
+**CRITICAL:** HubSpot has a unique architecture—Hubs + Tiers. Understanding what they have determines the entire conversation.
+
+**Hubs (can buy independently or bundle):**
+- Marketing Hub: Email, automation, landing pages, ads
+- Sales Hub: Sequences, quotes, forecasting, meeting scheduler
+- Service Hub: Ticketing, knowledge base, customer portal
+- Content Hub: CMS, blog, website
+- Data Hub: Data quality, sync, operations
+- Commerce Hub: Payments, invoicing, CPQ
+
+**Tiers (apply to each Hub):**
+- Free: Very limited
+- Starter: Basic paid features
+- Professional: Real automation, sequences, custom reports
+- Enterprise: Custom objects, advanced features
+
+---
+
+## STEP 1: First Mention - Confirm Hubs
+
+When user says HubSpot for CRM:
+- Default: "HubSpot—nice. Which Hubs do you have? Just Sales Hub, or are you running Marketing and Service too?"
+- If they don't know which Hubs: "No worries—a lot of people inherit a HubSpot setup and aren't sure what's included. Do you know if you're on Starter, Professional, or Enterprise?"
+- If they know Hubs but not tier: "Got it. Do you know if you're on Professional or Enterprise? That determines a lot of what you can actually do in the platform."
+
+---
+
+## STEP 2: Tier-Based Follow-Up
+
+**Starter:**
+- "Starter—so you're probably hitting some walls with automation and sequences. Is that a pain point, or is it working for what you need?"
+
+**Professional:**
+- "Professional—that's the sweet spot for most teams. Are you actually using the automation and sequences, or has that been hard to get off the ground?"
+
+**Enterprise:**
+- "Enterprise—full platform. Are you using custom objects, or mostly just the standard setup?"
+
+---
+
+## STEP 3: Satisfaction Scoring
+
+Ask: "On a scale of 1-5, how's HubSpot working for your team? 1 being 'we've outgrown it' and 5 being 'love it, wouldn't switch.'"
+
+**Satisfied (4-5):**
+- Response: "Nice—sounds like it's a good fit."
+- Action: Move on to tool inventory.
+
+**Neutral (3):**
+- Response: "A 3 with HubSpot usually means one of two things: you're hitting feature limits and need to upgrade, or you're paying for stuff you're not using. Which one feels closer?"
+- If limits mentioned: "Is it specific features you need, or just general flexibility?"
+- If underutilization mentioned: "Is it that certain Hubs aren't being used, or features within the Hub you're paying for?"
+- **After ONE clarification, move on.**
+
+**Dissatisfied (1-2):**
+- Response: "Got it—what's the main frustration? Is it capability limits, or is it more about how it's set up?"
+- If limits: "Are you on a tier that doesn't have what you need, or is it more about HubSpot in general?"
+- If setup: "Is it that workflows aren't configured, or the architecture doesn't match how you sell?"
+- Acknowledge: "That's a pattern I've seen. We'll prioritize that on the screen share."
+- **After clarification, acknowledge and move on.**
+
+---
+
+## STEP 4: Integration Health Probes (when other tools mentioned)
+
+**When Gong mentioned + HubSpot:**
+- "Is Gong syncing call data back to HubSpot deals, or is that connection still on the to-do list?"
+
+**When Outreach/SalesLoft mentioned + HubSpot:**
+- "Are you running sequences in Outreach, or do you use HubSpot's native sequences? Or both?"
+
+**When ZoomInfo/Apollo mentioned + HubSpot:**
+- "Is your enrichment data flowing into HubSpot contacts automatically?"
+
+**When Salesforce also mentioned (rare):**
+- "Wait—you have both HubSpot and Salesforce? Which one is the source of truth for your sales team?"
+
+---
+
+## STEP 5: Overlap Detection
+
+**If Sales Hub Professional+ AND Outreach/SalesLoft:**
+- "You've got sequences in HubSpot Sales Hub. Is there a reason you're also running Outreach, or is that something that evolved over time?"
+
+**If Marketing Hub AND separate marketing automation:**
+- "Interesting—so you have Marketing Hub but also use another tool for marketing. How do those work together?"
+
+(Don't probe aggressively—just note for screen share if mentioned)
+
+---
+
+## Named Failure Modes (safe to reference):
+- "A lot of teams end up on HubSpot Starter and get frustrated when they can't do sequences or custom reports—those require Professional"
+- "I see a lot of HubSpot setups where Marketing Hub is fully built out but Sales Hub is barely used"
+- "Marketing contact pricing catches people off guard—you grow your list and suddenly your bill doubles"
+- "The free CRM is great to start, but teams often outgrow it faster than they expect"
+- "HubSpot's easy to get started with, but the complexity sneaks up on you at scale"
+
+---
+
+## Transition to Next Topic:
+- Standard: "Got it. That gives me good context on your CRM setup."
+- If user wants more: "There's a lot we can dig into there—we'll make it a priority on the screen share."
+
+---
+
+## NEVER SAY during intake:
+- Specific pricing for any tier or Hub
+- Feature utilization benchmarks (e.g., "67% feature adoption is healthy")
+- How to fix tier limitations
+- Tier recommendations (e.g., "you should upgrade to Professional")
+- HubSpot vs. Salesforce comparison recommendations
+- How to fix marketing contact pricing issues
+
+Save diagnostic depth for the screen share.
+
+---
+
+## SKIP LOGIC:
+- If CRM = Salesforce → Skip ALL HubSpot questions
+- If CRM = "Other" → Note as finding, skip CRM-specific probes
+`
   }
 };
 

@@ -1,0 +1,123 @@
+CONTEXT:
+I'm building Staq, a GTM tech stack audit platform. We have a conversational intake system powered by Claude API. The intake system already has tool intelligence modules for ZoomInfo, Apollo, Sales Navigator, Gong, and Salesforce in /server/tool-intelligence/.
+
+HubSpot is the other CRM option (alongside Salesforce). The intake flow asks "Which CRM do you use?" early in the conversation. If they say HubSpot, we need Hub-aware and tier-aware follow-ups.
+
+Per the STAQ_CONVERSATIONAL_INTAKE_FRAMEWORK.pdf:
+- If CRM = HubSpot, ask HubSpot-specific questions about tiers, Hubs, integrations
+- Skip HubSpot questions entirely if they use Salesforce
+- Probe vague answers and flag uncertainty for screen share
+
+Per the STAQ_MVP_SPECIFICATION.pdf:
+- Keep conversation under 20 exchanges total
+- Generate JSON summary + preliminary analysis when complete
+
+GOAL:
+Add HubSpot CRM intelligence to the intake system so that when a prospect mentions HubSpot as their CRM, the system demonstrates expertise through Hub-aware and tier-aware questions—without giving away diagnostic value.
+
+REQUIREMENTS:
+
+1. Create /server/tool-intelligence/hubspot.js following the same structure as existing modules
+
+2. HubSpot has a unique architecture—Hubs + Tiers:
+   
+   Hubs (can buy independently or bundle):
+   - Marketing Hub: Email, automation, landing pages, ads
+   - Sales Hub: Sequences, quotes, forecasting, meeting scheduler
+   - Service Hub: Ticketing, knowledge base, customer portal
+   - Content Hub: CMS, blog, website
+   - Data Hub: Data quality, sync, operations
+   - Commerce Hub: Payments, invoicing, CPQ
+   
+   Tiers (apply to each Hub):
+   - Free: Very limited
+   - Starter: Basic paid ($20/mo/seat)
+   - Professional: Real automation, sequences, custom reports ($90/mo/seat for Sales/Service)
+   - Enterprise: Custom objects, advanced features ($150/mo/seat for Sales/Service)
+
+3. Conversation rules when user says "HubSpot" for CRM:
+
+   First mention response:
+   "HubSpot—nice. Which Hubs do you have? Just Sales Hub, or are you running Marketing and Service too?"
+   
+   If they don't know which Hubs:
+   "No worries—a lot of people inherit a HubSpot setup and aren't sure what's included. Do you know if you're on Starter, Professional, or Enterprise?"
+   
+   If they know Hubs but not tier:
+   "Got it. Do you know if you're on Professional or Enterprise? That determines a lot of what you can actually do in the platform."
+   
+   If Starter tier:
+   "Starter—so you're probably hitting some walls with automation and sequences. Is that a pain point, or is it working for what you need?"
+   
+   If Professional tier:
+   "Professional—that's the sweet spot for most teams. Are you actually using the automation and sequences, or has that been hard to get off the ground?"
+   
+   If Enterprise tier:
+   "Enterprise—full platform. Are you using custom objects, or mostly just the standard setup?"
+
+4. Satisfaction question uses insider framing:
+   "On a scale of 1-5, how's HubSpot working for your team? 1 being 'we've outgrown it' and 5 being 'love it, wouldn't switch.'"
+
+5. Score responses:
+   - 4-5: "Nice—sounds like it's a good fit." → Move on to tool inventory
+   - 3: "A 3 with HubSpot usually means one of two things: you're hitting feature limits and need to upgrade, or you're paying for stuff you're not using. Which one feels closer?" → ONE follow-up max
+   - 1-2: "Got it—what's the main frustration? Is it capability limits, or is it more about how it's set up?" → Probe, then flag for screen share
+
+6. Named failure modes (safe to reference as patterns):
+   - "A lot of teams end up on HubSpot Starter and get frustrated when they can't do sequences or custom reports—those require Professional"
+   - "I see a lot of HubSpot setups where Marketing Hub is fully built out but Sales Hub is barely used"
+   - "Marketing contact pricing catches people off guard—you grow your list and suddenly your bill doubles"
+   - "The free CRM is great to start, but teams often outgrow it faster than they expect"
+   - "HubSpot's easy to get started with, but the complexity sneaks up on you at scale"
+
+7. NEVER say:
+   - Specific pricing for any tier or Hub
+   - Feature utilization benchmarks (e.g., "67% feature adoption is healthy")
+   - How to fix tier limitations
+   - Tier recommendations (e.g., "you should upgrade to Professional")
+   - HubSpot vs. Salesforce comparison recommendations
+
+8. Integration health probes (use when other tools are mentioned):
+   When Gong mentioned + HubSpot CRM:
+   "Is Gong syncing call data back to HubSpot deals, or is that connection still on the to-do list?"
+   
+   When Outreach/SalesLoft mentioned + HubSpot CRM:
+   "Are you running sequences in Outreach, or do you use HubSpot's native sequences? Or both?"
+   
+   When ZoomInfo/Apollo mentioned + HubSpot CRM:
+   "Is your enrichment data flowing into HubSpot contacts automatically?"
+   
+   When Salesforce also mentioned (rare but happens):
+   "Wait—you have both HubSpot and Salesforce? Which one is the source of truth for your sales team?"
+
+9. Overlap detection with HubSpot native features:
+   If they have HubSpot Sales Hub Professional+ AND Outreach/SalesLoft:
+   "You've got sequences in HubSpot Sales Hub. Is there a reason you're also running Outreach, or is that something that evolved over time?"
+   
+   If they have HubSpot Marketing Hub AND separate marketing automation:
+   "Interesting—so you have Marketing Hub but also use {other tool} for marketing. How do those work together?"
+   
+   (Don't probe aggressively—just note for screen share if mentioned)
+
+10. Skip logic integration:
+    - If CRM = Salesforce, skip ALL HubSpot questions
+    - If CRM = "Other", note as finding and skip CRM-specific probes
+
+11. Screen share flags to auto-generate:
+    - satisfaction <= 2 → "PRIORITY: HubSpot dissatisfaction—deep dive on {pain_point}"
+    - tier = "Starter" AND pain_point contains "can't" or "limited" → "Likely hitting tier feature limits—review upgrade vs. alternatives"
+    - tier = "don't know" OR hubs = "don't know" → "Verify HubSpot Hubs and tier—unclear what they're paying for"
+    - pain_point contains "expensive" or "cost" or "pricing" → "Review contact pricing and seat utilization"
+    - has Marketing Hub AND has Sales Hub AND mentioned "not using" one of them → "Hub underutilization—potential cost savings"
+    - no dedicated admin → "Flag operational risk—no clear HubSpot owner"
+    - has HubSpot Sales Hub Pro+ AND has Outreach/SalesLoft → "Potential sequence tool redundancy"
+    - mentioned "outgrown" → "Evaluate if HubSpot is still the right fit or if migration should be discussed"
+
+12. Update /server/tool-intelligence/index.js to include hubspot in the registry with triggers: ["hubspot", "hub spot", "hs crm"]
+
+TECHNICAL:
+- Node.js/Express backend
+- Follow existing module structure in /server/tool-intelligence/
+- Export as module.exports = hubspotIntelligence
+- HubSpot is a CRM foundation, so this module activates early in the intake (after company context, during CRM selection)
+- Other tool modules should reference HubSpot integration health when both are present
