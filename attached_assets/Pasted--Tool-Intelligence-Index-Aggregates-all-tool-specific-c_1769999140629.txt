@@ -1,0 +1,342 @@
+/**
+ * Tool Intelligence Index
+ * Aggregates all tool-specific conversation intelligence modules
+ * 
+ * MVP Tools (6):
+ * - Gong (Conversation Intelligence)
+ * - Outreach (Sales Engagement)
+ * - Sales Navigator (Prospecting)
+ * - ZoomInfo (Data Enrichment)
+ * - Apollo (Data + Engagement Hybrid)
+ * - HubSpot/Salesforce (CRM) - handled separately in CRM logic
+ * 
+ * To add a new tool:
+ * 1. Create /server/tool-intelligence/{toolname}.js following the module pattern
+ * 2. Import it below
+ * 3. Add to toolIntelligence object
+ */
+
+// ============================================
+// TOOL IMPORTS - Add new tools here
+// ============================================
+
+const zoominfoIntelligence = require('./zoominfo');
+const apolloIntelligence = require('./apollo');
+// const gongIntelligence = require('./gong');
+// const outreachIntelligence = require('./outreach');
+// const salesNavigatorIntelligence = require('./sales-navigator');
+// const salesloftIntelligence = require('./salesloft');
+// const cognismIntelligence = require('./cognism');
+// const lushaIntelligence = require('./lusha');
+// const chorusIntelligence = require('./chorus');
+// const clariIntelligence = require('./clari');
+
+// ============================================
+// TOOL REGISTRY - Add new tools here
+// ============================================
+
+const toolIntelligence = {
+  // Data Enrichment
+  zoominfo: zoominfoIntelligence,
+  apollo: apolloIntelligence, // Hybrid: Data + Engagement
+  // cognism: cognismIntelligence,
+  // lusha: lushaIntelligence,
+  
+  // Conversation Intelligence
+  // gong: gongIntelligence,
+  // chorus: chorusIntelligence,
+  // clari: clariIntelligence,
+  
+  // Sales Engagement
+  // outreach: outreachIntelligence,
+  // salesloft: salesloftIntelligence,
+  
+  // Prospecting
+  // salesnavigator: salesNavigatorIntelligence,
+};
+
+// ============================================
+// TOOL CATEGORIES - For skip logic and grouping
+// ============================================
+
+const toolCategories = {
+  data_enrichment: ['zoominfo', 'apollo', 'cognism', 'lusha'],
+  conversation_intelligence: ['gong', 'chorus', 'clari'],
+  sales_engagement: ['outreach', 'salesloft', 'apollo'], // Apollo appears in multiple
+  prospecting: ['salesnavigator', 'zoominfo', 'apollo'],
+};
+
+// ============================================
+// CORE FUNCTIONS
+// ============================================
+
+/**
+ * Get tool intelligence by name or trigger phrase
+ * @param {string} input - Tool name or phrase from conversation
+ * @returns {object|null} - Tool intelligence module or null
+ */
+function getToolIntelligence(input) {
+  if (!input) return null;
+  
+  const normalized = input.toLowerCase().trim();
+  
+  for (const [key, tool] of Object.entries(toolIntelligence)) {
+    if (tool.triggers && tool.triggers.some(trigger => normalized.includes(trigger))) {
+      return tool;
+    }
+  }
+  return null;
+}
+
+/**
+ * Get all tools in a specific category
+ * @param {string} category - Category name
+ * @returns {array} - Array of tool names
+ */
+function getToolsByCategory(category) {
+  return toolCategories[category] || [];
+}
+
+/**
+ * Check if a tool exists in the registry
+ * @param {string} toolName - Tool name to check
+ * @returns {boolean}
+ */
+function hasToolIntelligence(toolName) {
+  return getToolIntelligence(toolName) !== null;
+}
+
+/**
+ * Get list of all registered tools
+ * @returns {array} - Array of tool names
+ */
+function getRegisteredTools() {
+  return Object.keys(toolIntelligence);
+}
+
+// ============================================
+// PROMPT GENERATION
+// ============================================
+
+/**
+ * Generate system prompt injection for active tools
+ * @param {array} mentionedTools - Array of tool names mentioned in conversation
+ * @returns {string} - Formatted prompt injection
+ */
+function generateToolPromptInjection(mentionedTools) {
+  if (!mentionedTools || mentionedTools.length === 0) {
+    return '';
+  }
+  
+  let injection = '\n\n## TOOL-SPECIFIC CONVERSATION RULES\n';
+  injection += 'When the user mentions these tools, use these rules to demonstrate expertise without giving away diagnostic value.\n';
+  injection += 'REMEMBER: Tease expertise, don\'t deliver it. Save benchmarks, fixes, and recommendations for the screen share.\n';
+  
+  for (const toolName of mentionedTools) {
+    const tool = getToolIntelligence(toolName);
+    if (tool) {
+      injection += formatToolRulesForPrompt(tool);
+    }
+  }
+  
+  // Add overlap detection rules if multiple tools mentioned
+  if (mentionedTools.length > 1) {
+    injection += generateOverlapRules(mentionedTools);
+  }
+  
+  return injection;
+}
+
+/**
+ * Format a single tool's intelligence for system prompt injection
+ * @param {object} tool - Tool intelligence module
+ * @returns {string} - Formatted rules
+ */
+function formatToolRulesForPrompt(tool) {
+  const rules = tool.conversationRules;
+  
+  let formatted = `\n### ${tool.toolName} (${tool.category})\n\n`;
+  
+  // First mention
+  formatted += `**When user first mentions ${tool.toolName}:**\n`;
+  formatted += `Say: "${rules.firstMention.responses.default}"\n`;
+  formatted += `DO NOT: ${rules.firstMention.doNot.join('; ')}\n\n`;
+  
+  // Use case branching (if exists - mainly for hybrid tools like Apollo)
+  if (rules.useCaseBranching) {
+    formatted += `**After use case confirmed:**\n`;
+    for (const [useCase, config] of Object.entries(rules.useCaseBranching)) {
+      formatted += `- If ${useCase}: "${config.followUp}"\n`;
+    }
+    formatted += '\n';
+  }
+  
+  // Satisfaction responses
+  formatted += `**Satisfaction scoring (1-5):**\n`;
+  const sat = rules.satisfactionScoring.responsesByScore;
+  formatted += `- Score 4-5: "${sat.satisfied.response}" Then move on.\n`;
+  
+  if (sat.neutral.response) {
+    formatted += `- Score 3: "${sat.neutral.response}" Then ONE follow-up max.\n`;
+  } else if (sat.neutral.responseByUseCase) {
+    formatted += `- Score 3: Respond based on confirmed use case. ONE follow-up max.\n`;
+  }
+  
+  formatted += `- Score 1-2: "${sat.dissatisfied.response}" Probe specific pain, then move on.\n\n`;
+  
+  // Named failure modes (safe to reference)
+  formatted += `**Patterns you can reference (once, naturally):**\n`;
+  for (const fm of Object.values(tool.namedFailureModes)) {
+    formatted += `- "${fm.safeReference}"\n`;
+  }
+  formatted += '\n';
+  
+  // Never say (top 5 for brevity)
+  formatted += `**NEVER say:**\n`;
+  for (const ns of tool.neverSay.slice(0, 5)) {
+    formatted += `- ${ns}\n`;
+  }
+  formatted += '\n';
+  
+  return formatted;
+}
+
+/**
+ * Generate overlap detection rules when multiple tools are mentioned
+ * @param {array} mentionedTools - Array of tool names
+ * @returns {string} - Overlap rules
+ */
+function generateOverlapRules(mentionedTools) {
+  let rules = '\n### OVERLAP DETECTION\n';
+  rules += 'Multiple tools mentioned in the same category may indicate redundancy. Probe for intentional separation vs. overlap.\n\n';
+  
+  // Check for data enrichment overlap
+  const dataTools = mentionedTools.filter(t => 
+    ['zoominfo', 'apollo', 'cognism', 'lusha'].some(dt => t.toLowerCase().includes(dt))
+  );
+  if (dataTools.length > 1) {
+    rules += `**Data tools overlap detected (${dataTools.join(', ')}):**\n`;
+    rules += `Ask: "Are these serving different purposes, or is there overlap you're trying to sort out?"\n`;
+    rules += `Flag for screen share: "Redundancy analysis: ${dataTools.join(' vs ')}"\n\n`;
+  }
+  
+  // Check for engagement overlap
+  const engagementTools = mentionedTools.filter(t =>
+    ['outreach', 'salesloft', 'apollo'].some(et => t.toLowerCase().includes(et))
+  );
+  if (engagementTools.length > 1) {
+    rules += `**Engagement tools overlap detected (${engagementTools.join(', ')}):**\n`;
+    rules += `Ask: "Are you running sequences in both, or is one just the data layer?"\n`;
+    rules += `Flag for screen share: "Redundancy analysis: ${engagementTools.join(' vs ')}"\n\n`;
+  }
+  
+  // Check for conversation intelligence overlap
+  const ciTools = mentionedTools.filter(t =>
+    ['gong', 'chorus', 'clari'].some(ct => t.toLowerCase().includes(ct))
+  );
+  if (ciTools.length > 1) {
+    rules += `**Conversation intelligence overlap detected (${ciTools.join(', ')}):**\n`;
+    rules += `Ask: "Are both of these actively recording calls, or has one fallen off?"\n`;
+    rules += `Flag for screen share: "Redundancy analysis: ${ciTools.join(' vs ')}"\n\n`;
+  }
+  
+  return rules;
+}
+
+// ============================================
+// FLAG GENERATION
+// ============================================
+
+/**
+ * Generate screen share flags based on conversation data
+ * @param {string} toolName - Tool name
+ * @param {object} conversationData - Data from conversation
+ * @returns {array} - Array of flag strings
+ */
+function generateScreenShareFlags(toolName, conversationData) {
+  const tool = getToolIntelligence(toolName);
+  if (!tool || !tool.screenShareFlags) return [];
+  
+  const flags = [];
+  const { satisfaction, painPoint, useCase, tier } = conversationData;
+  
+  // Dissatisfaction flag
+  if (satisfaction && satisfaction <= 2) {
+    const flag = tool.screenShareFlags.dissatisfied;
+    if (flag) {
+      flags.push(flag.flag.replace('{stated_pain_point}', painPoint || 'unspecified'));
+    }
+  }
+  
+  // Shelfware flag
+  if (painPoint && (painPoint.toLowerCase().includes('not using') || painPoint.toLowerCase().includes('nobody'))) {
+    const flag = tool.screenShareFlags.shelfware;
+    if (flag) {
+      flags.push(flag.flag);
+    }
+  }
+  
+  // Tier-specific flags (for ZoomInfo)
+  if (tier === 'Enterprise' && satisfaction && satisfaction <= 3) {
+    const flag = tool.screenShareFlags.enterpriseDissatisfied;
+    if (flag) {
+      flags.push(flag.flag);
+    }
+  }
+  
+  // Deliverability flag (for Apollo)
+  if (painPoint && (painPoint.toLowerCase().includes('spam') || painPoint.toLowerCase().includes('deliverability'))) {
+    const flag = tool.screenShareFlags.deliverabilityPriority;
+    if (flag) {
+      flags.push(flag.flag);
+    }
+  }
+  
+  return flags;
+}
+
+/**
+ * Generate all screen share flags for multiple tools
+ * @param {object} allToolData - Object with tool names as keys, conversation data as values
+ * @returns {array} - Array of all flags
+ */
+function generateAllScreenShareFlags(allToolData) {
+  const allFlags = [];
+  
+  for (const [toolName, data] of Object.entries(allToolData)) {
+    const toolFlags = generateScreenShareFlags(toolName, data);
+    allFlags.push(...toolFlags);
+  }
+  
+  // Sort by priority (PRIORITY: flags first)
+  return allFlags.sort((a, b) => {
+    const aPriority = a.startsWith('PRIORITY:') ? 0 : 1;
+    const bPriority = b.startsWith('PRIORITY:') ? 0 : 1;
+    return aPriority - bPriority;
+  });
+}
+
+// ============================================
+// EXPORTS
+// ============================================
+
+module.exports = {
+  // Core
+  toolIntelligence,
+  toolCategories,
+  
+  // Lookup functions
+  getToolIntelligence,
+  getToolsByCategory,
+  hasToolIntelligence,
+  getRegisteredTools,
+  
+  // Prompt generation
+  generateToolPromptInjection,
+  formatToolRulesForPrompt,
+  generateOverlapRules,
+  
+  // Flag generation
+  generateScreenShareFlags,
+  generateAllScreenShareFlags,
+};
