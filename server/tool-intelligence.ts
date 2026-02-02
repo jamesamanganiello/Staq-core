@@ -8,51 +8,135 @@ interface ToolIntelligence {
 const toolDatabase: Record<string, ToolIntelligence> = {
   apollo: {
     toolName: "Apollo",
-    category: "data_engagement",
-    triggers: ["apollo", "apollo.io"],
+    category: "data_enrichment_and_sales_engagement",
+    triggers: ["apollo", "apollo.io", "apolloio"],
     promptContent: `
-### Apollo.io (Data & Sales Engagement)
+### Apollo.io (Data & Sales Engagement) - TEASE LAYER
 
-**One-Liner:** All-in-one prospecting platform combining data, sequences, and dialer.
+**CRITICAL:** Apollo is a HYBRID tool (data + engagement). Must confirm use case before any other probing.
 
-**When user mentions Apollo, recognize:**
-- Apollo is a hybrid tool (data + engagement) - ask if they use it for BOTH or just one
-- Common among SMB/mid-market teams who want to consolidate ZoomInfo + Outreach into one platform
-- Usually chosen for cost savings vs. enterprise alternatives
+**CONSTRAINT:** All prospects target US/Canada only.
 
-**Smart Follow-Up Questions:**
-1. "Are you using Apollo primarily for data/enrichment, sequences, or both?"
-2. "How's your email deliverability been? Apollo users sometimes run into inbox placement issues."
-3. "Are you pulling data for US contacts or international? That matters for accuracy."
+---
 
-**Satisfaction Probes (when user rates 1-3):**
-- "A lot of Apollo frustration comes down to one of three things: data accuracy, deliverability issues, or the credit system burning faster than expected. Which one resonates?"
-- "Are you seeing bounce rates higher than you'd like, or is it more about the data being outdated?"
+## STEP 1: First Mention - MUST Confirm Use Case
 
-**Red Flag Detection:**
-| User Says | Flag Because |
-|-----------|--------------|
-| "Our bounce rates are really high" | Likely not running verification before send, or using Apollo for EMEA where accuracy drops significantly |
-| "We burn through credits too fast" | May not understand credit economics (phone = 8x email), or AI features consuming unexpectedly |
-| "We can't prove ROI" | CRM integration likely not configured with Source='Apollo' field - attribution is broken |
-| "The dialer doesn't work well" | If they need international calling, they're probably on wrong tier (US-only until Organization plan) |
-| "We also use ZoomInfo/Outreach" | Tool overlap - paying for capabilities twice, consolidation opportunity |
+Apollo is a hybrid tool. MUST confirm whether they use it for data, engagement, or both BEFORE asking satisfaction:
+- Default: "Apollo does a lot—are you using it primarily for data and prospecting, for sequences and outreach, or the full platform?"
+- If other data tool mentioned: "Interesting—so you've got Apollo alongside {other_tool}. Is Apollo handling your sequences, or are you using it for data too?"
+- If cost context mentioned: "Apollo's popular for consolidating the stack. Are you using both the data side and the engagement side, or mainly one?"
 
-**Patterns to Acknowledge:**
-- "Apollo's great for US prospecting but gets trickier internationally - we'll look at your target market coverage on the call"
-- "The all-in-one promise is appealing but sometimes the sequencer isn't quite as robust as dedicated tools - we'll see if that's affecting you"
-- "Credit burn is a common frustration - the economics aren't always obvious upfront"
+**DO NOT at this stage:**
+- Assume which capability they use
+- Say "so you're using it for engagement"
+- Mention it's cheaper than ZoomInfo
+- Ask about satisfaction until use case is confirmed
 
-**Skip Logic:**
-- If they use Apollo ONLY for data (not sequences), skip engagement/deliverability questions
-- If they're a small team (1-3 people), they're probably on Basic/Professional - don't ask about enterprise features
+---
 
-**DO NOT reveal during intake:**
-- Specific accuracy benchmarks
-- Exact pricing tiers or negotiation tactics
-- How to fix deliverability issues
-- ROI calculation formulas
-- Competitive positioning details
+## STEP 2: Branch Based on Use Case
+
+**Data Only:**
+- Follow-up: "Got it—Apollo for prospecting. How's the data quality been for your team?"
+- Skip: deliverability, warmup, sequences, dialer questions
+
+**Engagement Only:**
+- Follow-up: "Got it—Apollo for outreach. How many mailboxes do you have connected, roughly?"
+- Skip: data accuracy, bounce rates, contact quality questions
+
+**Full Platform:**
+- Follow-up: "Smart—using Apollo as the all-in-one. Are you actually getting value from both sides, or has one kind of fallen off?"
+- Skip: nothing
+
+---
+
+## STEP 3: Satisfaction Scoring
+
+Ask: "On a scale of 1-5, how's Apollo working for you? 1 being 'we're actively looking to replace it' and 5 being 'couldn't live without it.'"
+
+**Satisfied (4-5):**
+- Response: "Good to hear. Apollo's a lot of platform—we'll still want to look at whether you're getting full value from what you're paying for."
+- Action: Move on. Don't probe.
+
+**Neutral (3) - Use-Case-Specific Response:**
+- Data only: "That's pretty common. With Apollo data, the 3 usually comes from accuracy issues—especially bounce rates—or the credit system burning faster than expected. Which one's closer?"
+- Engagement only: "That's pretty common. With Apollo sequences, the 3 usually comes from deliverability issues, the learning curve on workflows, or the dialer not quite hitting the mark. Any of those ring true?"
+- Full platform: "That's pretty common with Apollo. Usually that 3 means one side is working well and the other isn't. Is it the data side or the engagement side that's frustrating you?"
+
+Follow-up probes:
+- If bounce/accuracy mentioned: "Is it email accuracy or phone numbers that are the bigger issue?"
+- If credits mentioned: "Is it the credit consumption itself, or more that you didn't realize how fast certain actions eat them up?"
+- If deliverability mentioned: "Did you run the warmup period, or did the team jump straight into volume?"
+- If learning curve mentioned: "Is it that reps aren't adopting it, or that the person who set it up is the only one who understands it?"
+- If dialer mentioned: "Is it call quality, or more that the numbers aren't connecting?"
+- **After ONE clarification, move on.**
+
+**Dissatisfied (1-2):**
+- Response: "Okay, that's worth understanding. What's the main frustration—is it the data quality, the outreach tools, or something about how the platform works overall?"
+- If data: "Is it email accuracy or phone numbers that are the bigger issue?"
+- If deliverability: "Did that happen right away, or after you'd been using it for a while?"
+- If cost: "Is it that you're not getting value for what you're paying, or is it the credit model itself that's frustrating?"
+- If complexity: "Is it the interface, or more that the workflows require someone technical to maintain?"
+- If not using: "Is that because it didn't deliver, or more that the team never fully adopted it?"
+- Acknowledge: "That's a pattern I've seen. We'll make it a priority on the screen share."
+- **After clarification, acknowledge and move on.**
+
+---
+
+## STEP 4: Overlap Detection (if other tools mentioned)
+
+- ZoomInfo: "You've got both Apollo and ZoomInfo in the stack. Is that intentional—like ZoomInfo for enterprise accounts and Apollo for volume prospecting—or is there overlap you're trying to sort out?"
+  - If confirmed: "That's common—teams often end up with both through different buying decisions. We'll map out where each is actually being used on the screen share."
+- Outreach: "Interesting—Apollo and Outreach together. Is Apollo just your data layer, or are you running sequences in both places?"
+- SalesLoft: "Interesting—Apollo and SalesLoft together. Is Apollo just your data layer, or are you running sequences in both places?"
+- Cognism: "Apollo and Cognism—is Cognism covering a specific use case that Apollo wasn't handling?"
+- Lusha: "Got both Apollo and Lusha. Is Lusha a backup for when Apollo doesn't have the contact, or are different teams using different tools?"
+
+**DO NOT:**
+- Say "you're probably overpaying"
+- Recommend which to keep
+- Say Apollo is "good enough" to replace anything
+- Mention Apollo is cheaper
+
+---
+
+## STEP 5: Feature Probes (ONLY if user mentions unprompted)
+
+- Warmup: "Did you run the full warmup period before scaling, or did the team need to start sending right away?"
+- Credits: "Is it clear what's consuming the credits, or is it more of a mystery where they're going?"
+- Dialer: "Is it the call quality itself, or more about connect rates?"
+- Chrome extension: "Is the team actually using the extension for prospecting, or has it become more of a 'we have it but don't use it' thing?"
+- Intent: "Are those intent signals actually making it into your workflow, or do they just sit in the platform?"
+
+---
+
+## Named Failure Modes (safe to reference):
+- "Accuracy issues come up a lot with Apollo"
+- "Credit burn is a common frustration with Apollo"
+- "Deliverability catches a lot of Apollo users"
+- "That's common with Apollo—there's a lot packed in there"
+- "The all-in-one promise is appealing but sometimes one side works better than the other"
+- "Phone data tends to be the weaker side"
+- "A lot of teams don't realize how critical the warmup period is"
+
+---
+
+## Transition to Next Topic:
+- Standard: "Got it. That gives me good context on Apollo."
+- If user wants more: "There's a lot we can dig into there—we'll make it a priority on the screen share. For now, let me capture the rest of your stack so we're prepared."
+
+---
+
+## NEVER SAY during intake:
+- Specific pricing (e.g., "Apollo starts at $49/month")
+- Accuracy percentages (e.g., "US accuracy is 85-95%")
+- Credit economics (e.g., "Phone reveals cost 8x email reveals")
+- Deliverability benchmarks (e.g., "Keep sends under 200/day")
+- Warmup duration (e.g., "Run warmup for 2-4 weeks")
+- Competitor price comparisons (e.g., "Apollo is 10x cheaper than ZoomInfo")
+- How to fix anything
+- Tier recommendations
+- ROI calculations
 
 Save diagnostic depth for the screen share.
 `
