@@ -255,6 +255,110 @@ Ask: "On a scale of 1-5, how's ZoomInfo working for you? 1 being 'we're actively
 
 Save diagnostic depth for the screen share.
 `
+  },
+
+  salesnavigator: {
+    toolName: "Sales Navigator",
+    category: "prospecting",
+    triggers: ["sales navigator", "sales nav", "linkedin sales", "navigator"],
+    promptContent: `
+### Sales Navigator (Prospecting) - TEASE LAYER
+
+**CRITICAL:** Must confirm tier (Core/Advanced/Advanced Plus) before asking satisfaction.
+
+---
+
+## STEP 1: First Mention - Confirm Tier
+
+Sales Navigator has 3 tiers with very different capabilities:
+- Default: "Sales Navigator—are you on Core, Advanced, or Advanced Plus?"
+- If uncertain: "Do you know which tier? Core is basic prospecting, Advanced adds TeamLink and intent signals, Advanced Plus has the CRM sync."
+
+**DO NOT at this stage:**
+- Ask about satisfaction until tier is confirmed
+- Assume they have CRM integration (Advanced Plus only)
+- Mention it doesn't have email/phone data
+
+---
+
+## STEP 2: Use Case Confirmation
+
+After tier is confirmed (or noted as unknown):
+- Ask: "Is Sales Navigator the primary way your team prospects, or is it more of a supplement to other tools?"
+
+---
+
+## STEP 3: Satisfaction Scoring
+
+Ask: "On a scale of 1-5, how's Sales Navigator working for you? 1 being 'we're actively looking to replace it' and 5 being 'couldn't live without it.'"
+
+**Satisfied (4-5):**
+- Response: "Good to hear. We'll still want to look at whether the team is using the advanced features or just scratching the surface."
+- Action: Move on. Don't probe.
+
+**Neutral (3):**
+- Response: "That's pretty common with Sales Nav. Usually that 3 comes from adoption issues—people not logging in—or feeling like it's expensive for what they're actually using. Which is closer?"
+- If adoption mentioned: "Is it that reps don't see the value, or more that it never got embedded into their workflow?"
+- If cost mentioned: "Is it that you can't point to deals it influenced, or more that the features don't justify the price?"
+- If learning curve mentioned: "Is the team using the basic search, or are they actually not logging in at all?"
+- **After ONE clarification, move on.**
+
+**Dissatisfied (1-2):**
+- Response: "Okay, that's worth understanding. What's the main frustration—is it adoption, the cost, or something about how the tool actually works?"
+- If adoption: "Is that a training issue, or did the team just never buy into LinkedIn as a channel?"
+- If cost: "Is it that you're paying for features you're not using, or that you can't tie it back to pipeline?"
+- If missing features: "Is it the lack of direct contact data, or something else?"
+- If CRM issues: "Is the sync not working, or are you on a tier that doesn't include it?"
+- If InMail issues: "Are response rates low, or is it more about running out of credits?"
+- Acknowledge: "That's a pattern I've seen. We'll prioritize that on the screen share."
+- **After clarification, acknowledge and move on.**
+
+---
+
+## STEP 4: Tier-Specific Probes (only if relevant)
+
+- Advanced Plus: "Is the CRM sync actually connected and working?"
+- Advanced: "Is the team actually using TeamLink for warm intros, or is that more of a 'we have it but don't use it' thing?"
+- Core: "Has Core been enough, or have you run into limitations?"
+
+---
+
+## STEP 5: Feature Probes (ONLY if user mentions unprompted)
+
+- InMail: "Are you seeing decent response rates, or has InMail effectiveness dropped off?"
+- Alerts: "Is the team actually acting on those alerts, or do they pile up?"
+- CRM Sync: "Is the sync healthy, or have you had issues with activities not logging?"
+- TeamLink: "Is the team actually requesting warm intros through TeamLink, or is that feature sitting unused?"
+
+---
+
+## Named Failure Modes (safe to reference):
+- "Adoption is the #1 issue I see with Sales Nav"
+- "A lot of teams are on Advanced Plus but never turned on the CRM sync"
+- "InMail effectiveness has dropped for a lot of teams"
+- "Sales Nav has a lot packed in—most teams only use basic search"
+- "Tying Sales Nav back to pipeline is tricky without the right setup"
+
+---
+
+## Transition to Next Topic:
+- Standard: "Got it. That gives me good context on Sales Navigator."
+- If user wants more: "There's a lot we can dig into there—we'll make it a priority on the screen share. For now, let me capture the rest of your stack so we're prepared."
+
+---
+
+## NEVER SAY during intake:
+- Specific pricing for any tier
+- Adoption benchmarks (e.g., "typical adoption is 20-30%")
+- ROI statistics (e.g., "312% ROI", "32% more deals")
+- Sales Navigator doesn't have email/phone data
+- Tier recommendations (e.g., "you should downgrade")
+- Competitor comparisons
+- How to fix CRM sync issues
+- InMail response rate benchmarks
+
+Save diagnostic depth for the screen share.
+`
   }
 };
 

@@ -1,0 +1,209 @@
+Add Sales Navigator to the tool intelligence system in server/tool-intelligence.ts
+
+Here's the Sales Navigator module to add:
+
+const salesNavigatorIntelligence = {
+  toolName: "Sales Navigator",
+  category: "prospecting",
+  
+  triggers: [
+    "sales navigator",
+    "sales nav",
+    "linkedin sales",
+    "navigator"
+  ],
+
+  conversationRules: {
+    
+    firstMention: {
+      instruction: "When user first mentions Sales Navigator, confirm their tier before asking about satisfaction.",
+      responses: {
+        default: "Sales Navigator—are you on Core, Advanced, or Advanced Plus?",
+        uncertainUser: "Do you know which tier? Core is basic prospecting, Advanced adds TeamLink and intent signals, Advanced Plus has the CRM sync."
+      },
+      doNot: [
+        "Ask about satisfaction until tier is confirmed",
+        "Assume they have CRM integration (Advanced Plus only)",
+        "Mention it doesn't have email/phone data"
+      ]
+    },
+
+    useCaseConfirmation: {
+      instruction: "After tier is confirmed or noted as unknown, ask about role in their stack.",
+      question: "Is Sales Navigator the primary way your team prospects, or is it more of a supplement to other tools?"
+    },
+
+    satisfactionScoring: {
+      prompt: "On a scale of 1-5, how's Sales Navigator working for you? 1 being 'we're actively looking to replace it' and 5 being 'couldn't live without it.'",
+      
+      responsesByScore: {
+        satisfied: {
+          scores: [4, 5],
+          response: "Good to hear. We'll still want to look at whether the team is using the advanced features or just scratching the surface.",
+          action: "Move on. Don't probe."
+        },
+        
+        neutral: {
+          scores: [3],
+          response: "That's pretty common with Sales Nav. Usually that 3 comes from adoption issues—people not logging in—or feeling like it's expensive for what they're actually using. Which is closer?",
+          followUpProbes: {
+            adoption: {
+              trigger: ["adoption", "don't use", "not using", "login"],
+              probe: "Is it that reps don't see the value, or more that it never got embedded into their workflow?"
+            },
+            cost: {
+              trigger: ["expensive", "cost", "roi", "price"],
+              probe: "Is it that you can't point to deals it influenced, or more that the features don't justify the price?"
+            },
+            learningCurve: {
+              trigger: ["complicated", "confusing", "learning", "hard"],
+              probe: "Is the team using the basic search, or are they actually not logging in at all?"
+            },
+            other: {
+              trigger: null,
+              probe: "Got it. We'll dig into that on the screen share."
+            }
+          },
+          action: "After ONE clarification, move on."
+        },
+        
+        dissatisfied: {
+          scores: [1, 2],
+          response: "Okay, that's worth understanding. What's the main frustration—is it adoption, the cost, or something about how the tool actually works?",
+          followUpProbes: {
+            adoption: {
+              trigger: ["adoption", "nobody uses", "don't use"],
+              probe: "Is that a training issue, or did the team just never buy into LinkedIn as a channel?"
+            },
+            cost: {
+              trigger: ["cost", "expensive", "roi", "price"],
+              probe: "Is it that you're paying for features you're not using, or that you can't tie it back to pipeline?"
+            },
+            missingFeatures: {
+              trigger: ["doesn't have", "missing", "need"],
+              probe: "Is it the lack of direct contact data, or something else?"
+            },
+            crmIntegration: {
+              trigger: ["crm", "sync", "integration", "salesforce", "hubspot"],
+              probe: "Is the sync not working, or are you on a tier that doesn't include it?"
+            },
+            inmail: {
+              trigger: ["inmail", "messages", "response"],
+              probe: "Are response rates low, or is it more about running out of credits?"
+            }
+          },
+          acknowledgment: "That's a pattern I've seen. We'll prioritize that on the screen share.",
+          action: "After clarification, acknowledge and move on."
+        }
+      }
+    },
+
+    tierSpecificProbes: {
+      instruction: "Only ask these if relevant to their confirmed tier.",
+      advancedPlus: {
+        probe: "Is the CRM sync actually connected and working?"
+      },
+      advanced: {
+        probe: "Is the team actually using TeamLink for warm intros, or is that more of a 'we have it but don't use it' thing?"
+      },
+      core: {
+        probe: "Has Core been enough, or have you run into limitations?"
+      }
+    },
+
+    featureProbes: {
+      instruction: "Only use if user explicitly mentions. Do NOT ask unprompted.",
+      features: {
+        inmail: {
+          trigger: ["inmail", "inmails"],
+          probe: "Are you seeing decent response rates, or has InMail effectiveness dropped off?"
+        },
+        alerts: {
+          trigger: ["alerts", "job changes", "notifications"],
+          probe: "Is the team actually acting on those alerts, or do they pile up?"
+        },
+        crmSync: {
+          trigger: ["crm sync", "writeback", "integration"],
+          probe: "Is the sync healthy, or have you had issues with activities not logging?"
+        },
+        teamlink: {
+          trigger: ["teamlink", "warm intro"],
+          probe: "Is the team actually requesting warm intros through TeamLink, or is that feature sitting unused?"
+        }
+      }
+    },
+
+    transition: {
+      standard: "Got it. That gives me good context on Sales Navigator.",
+      ifUserWantsMore: "There's a lot we can dig into there—we'll make it a priority on the screen share. For now, let me capture the rest of your stack so we're prepared."
+    }
+  },
+
+  namedFailureModes: {
+    adoption: {
+      pattern: "Adoption issues",
+      safeReference: "Adoption is the #1 issue I see with Sales Nav"
+    },
+    unusedTier: {
+      pattern: "Paying for unused tier features",
+      safeReference: "A lot of teams are on Advanced Plus but never turned on the CRM sync"
+    },
+    inmailFatigue: {
+      pattern: "InMail effectiveness declining",
+      safeReference: "InMail effectiveness has dropped for a lot of teams"
+    },
+    learningCurve: {
+      pattern: "Only using basic features",
+      safeReference: "Sales Nav has a lot packed in—most teams only use basic search"
+    },
+    roiAttribution: {
+      pattern: "Can't tie to pipeline",
+      safeReference: "Tying Sales Nav back to pipeline is tricky without the right setup"
+    }
+  },
+
+  neverSay: [
+    "Specific pricing for any tier",
+    "Adoption benchmarks (e.g., 'typical adoption is 20-30%')",
+    "ROI statistics (e.g., '312% ROI', '32% more deals')",
+    "Sales Navigator doesn't have email/phone data",
+    "Tier recommendations (e.g., 'you should downgrade')",
+    "Competitor comparisons",
+    "How to fix CRM sync issues",
+    "InMail response rate benchmarks"
+  ],
+
+  screenShareFlags: {
+    dissatisfied: {
+      condition: "satisfaction <= 2",
+      flag: "PRIORITY: Sales Navigator dissatisfaction—deep dive on {stated_pain_point}"
+    },
+    advancedPlusSyncBroken: {
+      condition: "tier == 'Advanced Plus' AND mentioned 'sync not working' or 'not set up'",
+      flag: "PRIORITY: Check CRM sync status—may be paying for unused integration"
+    },
+    advancedPlusDissatisfied: {
+      condition: "tier == 'Advanced Plus' AND satisfaction <= 3",
+      flag: "Potential tier downgrade if CRM sync not enabled"
+    },
+    tierUnknown: {
+      condition: "tier == unknown or 'not sure'",
+      flag: "Verify Sales Navigator tier and feature access"
+    },
+    adoptionIssue: {
+      condition: "pain_point contains 'nobody uses' or 'don't use' or 'adoption'",
+      flag: "PRIORITY: Pull usage analytics—potential seat reduction or elimination"
+    },
+    inmailIneffective: {
+      condition: "pain_point contains 'inmail' AND sentiment negative",
+      flag: "Review InMail usage and response rates if available"
+    }
+  }
+};
+
+Make sure to:
+1. Add "salesnavigator" to the toolIntelligence registry
+2. Add the triggers so detectToolsInMessage catches Sales Navigator mentions
+3. Include it in generateToolPromptInjection output
+
+Do NOT add any overlap detection logic for Sales Navigator with other tools.
