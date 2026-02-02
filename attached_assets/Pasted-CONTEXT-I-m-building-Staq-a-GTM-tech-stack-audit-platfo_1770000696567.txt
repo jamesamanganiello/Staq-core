@@ -1,0 +1,106 @@
+CONTEXT:
+I'm building Staq, a GTM tech stack audit platform. We have a conversational intake system powered by Claude API. The intake system already has tool intelligence modules for ZoomInfo, Apollo, Sales Navigator, and Gong in /server/tool-intelligence/.
+
+Salesforce is DIFFERENT from other tools—it's the CRM foundation that other tools integrate INTO. The intake flow already asks "Which CRM do you use?" early in the conversation. If they say Salesforce, we need edition-aware follow-ups.
+
+Per the STAQ_CONVERSATIONAL_INTAKE_FRAMEWORK.pdf:
+- If CRM = Salesforce, ask Salesforce-specific questions about edition, integrations, admin setup
+- Skip Salesforce questions entirely if they use HubSpot
+- Probe vague answers: "I think we have about 25 licenses" → "Do you have admin access to check, or should we look together on the screen share?"
+
+Per the STAQ_MVP_SPECIFICATION.pdf:
+- Recognize uncertainty and flag for screen share rather than pressing
+- Keep conversation under 20 exchanges total
+
+GOAL:
+Add Salesforce CRM intelligence to the intake system so that when a prospect mentions Salesforce as their CRM, the system demonstrates expertise through edition-aware questions and integration health probes—without giving away diagnostic value.
+
+REQUIREMENTS:
+
+1. Create /server/tool-intelligence/salesforce.js following the same structure as existing modules
+
+2. Salesforce has multiple editions with very different capabilities:
+   - Starter/Essentials: Very limited, no API
+   - Professional: Full CRM but no API by default, Sales Engagement is add-on
+   - Enterprise: API access, Einstein Opportunity Scoring, some Einstein Conversation Insights
+   - Performance: Full Einstein, Sales Engagement included
+   - Unlimited: Everything included
+
+3. Conversation rules when user says "Salesforce" for CRM:
+
+   First mention response:
+   "Salesforce—got it. Do you know which edition you're on? Professional, Enterprise, or Unlimited?"
+   
+   If they don't know edition:
+   "No worries—we'll figure that out on the screen share. Do you have a dedicated Salesforce admin, or is it more of a shared responsibility?"
+   
+   If Professional:
+   "Professional edition. Are you running into any limitations with integrations or automation?"
+   
+   If Enterprise:
+   "Enterprise—solid middle ground. Are you using any of the Einstein features, or mostly just the core CRM?"
+   
+   If Performance/Unlimited:
+   "That's the full platform. Is your team actually leveraging Sales Engagement and Einstein, or has adoption been a challenge?"
+
+4. Satisfaction question uses insider framing:
+   "On a scale of 1-5, how's Salesforce working for your team? 1 being 'expensive data entry system' and 5 being 'couldn't run the business without it.'"
+
+5. Score responses:
+   - 4-5: "Nice—sounds like you've got good adoption." → Move on to tool inventory
+   - 3: "A 3 with Salesforce usually means one of two things: reps aren't logging activities consistently, or the data that goes in isn't reliable. Which one resonates?" → ONE follow-up max
+   - 1-2: "Got it—what's the main frustration? Is it adoption, data quality, or something with how it's set up?" → Probe, then flag for screen share
+
+6. Named failure modes (safe to reference as patterns):
+   - "A lot of Salesforce orgs end up as expensive spreadsheets—data goes in but nobody trusts the reports"
+   - "The classic pattern is reps avoiding Salesforce and managers not having visibility into the pipeline"
+   - "I've seen teams on Enterprise or Unlimited that aren't using any of the Einstein features they're paying for"
+   - "Integration health is usually where things break down—tools connected on paper but data not actually flowing"
+
+7. NEVER say:
+   - Specific pricing for any edition
+   - License utilization benchmarks (e.g., "75% active is healthy")
+   - How to fix adoption issues
+   - Edition recommendations (e.g., "you should downgrade to Professional")
+   - Specific Einstein feature comparisons
+
+8. Integration health probes (use when other tools are mentioned):
+   When Gong mentioned + Salesforce CRM:
+   "Is Gong actually syncing call data back to Salesforce opportunities, or is that connection a bit fuzzy?"
+   
+   When Outreach/SalesLoft mentioned + Salesforce CRM:
+   "Are sequence activities logging to Salesforce automatically, or is there manual work involved?"
+   
+   When ZoomInfo/Apollo mentioned + Salesforce CRM:
+   "Is your enrichment data flowing into Salesforce, or do reps have to copy-paste between systems?"
+
+9. Skip logic integration:
+   - If CRM = HubSpot, skip ALL Salesforce questions
+   - If CRM = "Other", note as finding and skip CRM-specific probes
+
+10. Screen share flags to auto-generate:
+    - satisfaction <= 2 → "PRIORITY: Salesforce dissatisfaction—deep dive on {pain_point}"
+    - edition = "don't know" → "Verify Salesforce edition and feature access"
+    - pain_point contains "adoption" or "reps don't use" → "PRIORITY: Pull login reports—potential license reduction"
+    - pain_point contains "data quality" or "don't trust" → "Review data entry workflows and required fields"
+    - edition = Enterprise/Performance/Unlimited AND mentioned "not using Einstein" → "Einstein feature audit—potential underutilization"
+    - no dedicated admin → "Flag operational risk—no clear Salesforce owner"
+    - ANY integrated tool + mentioned sync issues → "PRIORITY: Integration health check for {tool} → Salesforce"
+
+11. Overlap detection with Salesforce native features:
+    If they have Salesforce Performance/Unlimited AND Outreach/SalesLoft:
+    "Interesting—you've got Sales Engagement included with Salesforce. Is there a reason you're running Outreach separately, or is that historical?"
+    
+    If they have Salesforce Enterprise+ AND Gong:
+    "Salesforce has Einstein Conversation Insights built in at your tier. Are you using both, or just Gong?"
+    
+    (Don't probe this aggressively—just note it for screen share if mentioned)
+
+12. Update /server/tool-intelligence/index.js to include salesforce in the registry with triggers: ["salesforce", "sfdc", "sales cloud"]
+
+TECHNICAL:
+- Node.js/Express backend
+- Follow existing module structure in /server/tool-intelligence/
+- Export as module.exports = salesforceIntelligence
+- Salesforce is the CRM foundation, so this module activates early in the intake (after company context, during CRM selection)
+- Other tool modules (Gong, Outreach, ZoomInfo) should reference Salesforce integration health when both are present
