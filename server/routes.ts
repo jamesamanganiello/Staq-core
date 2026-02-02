@@ -13,8 +13,8 @@ const anthropic = new Anthropic({
 });
 
 // System prompt version tracking
-const PROMPT_VERSION = "2.8.0";
-const PROMPT_UPDATED = "2026-01-31";
+const PROMPT_VERSION = "2.9.0";
+const PROMPT_UPDATED = "2026-02-02";
 
 const SYSTEM_PROMPT = `You are Staq, an AI assistant conducting an intake conversation for a GTM tech stack health check. Your goal is to gather the information needed to prepare for a screen share audit while making the conversation feel natural and expert-level.
 

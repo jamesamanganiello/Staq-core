@@ -1,0 +1,284 @@
+/**
+ * Apollo.io Tool Intelligence for STAQ Intake
+ * 
+ * CRITICAL: Apollo is a HYBRID tool (data + engagement).
+ * Must confirm use case before any other probing.
+ * 
+ * TEASE LAYER ONLY - show pattern recognition, named failure modes, informed follow-ups
+ * Do NOT give away: benchmarks, fixes, procurement intel
+ * 
+ * Constraint: All prospects target US/Canada only
+ */
+
+const apolloIntelligence = {
+  toolName: "Apollo",
+  category: "data_enrichment_and_sales_engagement",
+  
+  triggers: [
+    "apollo",
+    "apollo.io",
+    "apolloio"
+  ],
+
+  conversationRules: {
+    
+    // STEP 1: First mention - MUST confirm use case
+    firstMention: {
+      instruction: "Apollo is a hybrid tool. MUST confirm whether they use it for data, engagement, or both BEFORE asking satisfaction.",
+      responses: {
+        default: "Apollo does a lot—are you using it primarily for data and prospecting, for sequences and outreach, or the full platform?",
+        ifOtherDataToolMentioned: "Interesting—so you've got Apollo alongside {other_tool}. Is Apollo handling your sequences, or are you using it for data too?",
+        ifCostContextMentioned: "Apollo's popular for consolidating the stack. Are you using both the data side and the engagement side, or mainly one?"
+      },
+      doNot: [
+        "Assume which capability they use",
+        "Say 'so you're using it for engagement'",
+        "Mention it's cheaper than ZoomInfo",
+        "Ask about satisfaction until use case is confirmed"
+      ]
+    },
+
+    // STEP 2: Branch based on use case
+    useCaseBranching: {
+      dataOnly: {
+        followUp: "Got it—Apollo for prospecting. How's the data quality been for your team?",
+        skipTopics: ["deliverability", "warmup", "sequences", "dialer"]
+      },
+      engagementOnly: {
+        followUp: "Got it—Apollo for outreach. How many mailboxes do you have connected, roughly?",
+        skipTopics: ["data accuracy", "bounce rates", "contact quality"]
+      },
+      fullPlatform: {
+        followUp: "Smart—using Apollo as the all-in-one. Are you actually getting value from both sides, or has one kind of fallen off?",
+        skipTopics: []
+      }
+    },
+
+    // STEP 3: Satisfaction scoring with use-case-specific probes
+    satisfactionScoring: {
+      prompt: "On a scale of 1-5, how's Apollo working for you? 1 being 'we're actively looking to replace it' and 5 being 'couldn't live without it.'",
+      
+      responsesByScore: {
+        satisfied: {
+          scores: [4, 5],
+          response: "Good to hear. Apollo's a lot of platform—we'll still want to look at whether you're getting full value from what you're paying for.",
+          action: "Move on. Don't probe."
+        },
+        
+        neutral: {
+          scores: [3],
+          responseByUseCase: {
+            dataOnly: "That's pretty common. With Apollo data, the 3 usually comes from accuracy issues—especially bounce rates—or the credit system burning faster than expected. Which one's closer?",
+            engagementOnly: "That's pretty common. With Apollo sequences, the 3 usually comes from deliverability issues, the learning curve on workflows, or the dialer not quite hitting the mark. Any of those ring true?",
+            fullPlatform: "That's pretty common with Apollo. Usually that 3 means one side is working well and the other isn't. Is it the data side or the engagement side that's frustrating you?"
+          },
+          followUpProbes: {
+            bounceRates: {
+              trigger: ["bounce", "accuracy", "data quality"],
+              probe: "Is it email accuracy or phone numbers that are the bigger issue?"
+            },
+            credits: {
+              trigger: ["credit", "credits", "burning", "expensive"],
+              probe: "Is it the credit consumption itself, or more that you didn't realize how fast certain actions eat them up?"
+            },
+            deliverability: {
+              trigger: ["deliverability", "spam", "inbox"],
+              probe: "Did you run the warmup period, or did the team jump straight into volume?"
+            },
+            learningCurve: {
+              trigger: ["complicated", "confusing", "hard", "learning"],
+              probe: "Is it that reps aren't adopting it, or that the person who set it up is the only one who understands it?"
+            },
+            dialer: {
+              trigger: ["dialer", "calling", "calls", "phone"],
+              probe: "Is it call quality, or more that the numbers aren't connecting?"
+            }
+          },
+          action: "After ONE clarification, move on."
+        },
+        
+        dissatisfied: {
+          scores: [1, 2],
+          response: "Okay, that's worth understanding. What's the main frustration—is it the data quality, the outreach tools, or something about how the platform works overall?",
+          followUpProbes: {
+            data: {
+              trigger: ["data", "accuracy", "bounces", "contacts"],
+              probe: "Is it email accuracy or phone numbers that are the bigger issue?"
+            },
+            deliverability: {
+              trigger: ["deliverability", "spam", "blacklisted", "emails"],
+              probe: "Did that happen right away, or after you'd been using it for a while?"
+            },
+            cost: {
+              trigger: ["cost", "expensive", "credits", "pricing"],
+              probe: "Is it that you're not getting value for what you're paying, or is it the credit model itself that's frustrating?"
+            },
+            complexity: {
+              trigger: ["complicated", "hard", "confusing", "technical"],
+              probe: "Is it the interface, or more that the workflows require someone technical to maintain?"
+            },
+            support: {
+              trigger: ["support", "help", "response"],
+              probe: "Is that response time, or more that issues aren't getting resolved?"
+            },
+            notUsing: {
+              trigger: ["not using", "don't use", "nobody", "shelfware"],
+              probe: "Is that because it didn't deliver, or more that the team never fully adopted it?"
+            }
+          },
+          acknowledgment: "That's a pattern I've seen. We'll make it a priority on the screen share.",
+          action: "After clarification, acknowledge and move on."
+        }
+      }
+    },
+
+    // STEP 4: Overlap detection
+    overlapDetection: {
+      overlaps: {
+        zoominfo: {
+          trigger: ["zoominfo"],
+          probe: "You've got both Apollo and ZoomInfo in the stack. Is that intentional—like ZoomInfo for enterprise accounts and Apollo for volume prospecting—or is there overlap you're trying to sort out?",
+          ifConfirmed: "That's common—teams often end up with both through different buying decisions. We'll map out where each is actually being used on the screen share."
+        },
+        outreach: {
+          trigger: ["outreach"],
+          probe: "Interesting—Apollo and Outreach together. Is Apollo just your data layer, or are you running sequences in both places?"
+        },
+        salesloft: {
+          trigger: ["salesloft"],
+          probe: "Interesting—Apollo and SalesLoft together. Is Apollo just your data layer, or are you running sequences in both places?"
+        },
+        cognism: {
+          trigger: ["cognism"],
+          probe: "Apollo and Cognism—is Cognism covering a specific use case that Apollo wasn't handling?"
+        },
+        lusha: {
+          trigger: ["lusha"],
+          probe: "Got both Apollo and Lusha. Is Lusha a backup for when Apollo doesn't have the contact, or are different teams using different tools?"
+        }
+      },
+      doNot: [
+        "Say 'you're probably overpaying'",
+        "Recommend which to keep",
+        "Say Apollo is 'good enough' to replace anything",
+        "Mention Apollo is cheaper"
+      ]
+    },
+
+    // STEP 5: Feature probes (only if mentioned unprompted)
+    featureProbes: {
+      instruction: "Only use if user explicitly mentions. Do NOT ask unprompted.",
+      features: {
+        warmup: {
+          trigger: ["warmup", "warm up", "warming"],
+          probe: "Did you run the full warmup period before scaling, or did the team need to start sending right away?"
+        },
+        credits: {
+          trigger: ["credits", "credit system", "running out"],
+          probe: "Is it clear what's consuming the credits, or is it more of a mystery where they're going?"
+        },
+        dialer: {
+          trigger: ["dialer", "calling", "calls"],
+          probe: "Is it the call quality itself, or more about connect rates?"
+        },
+        chromeExtension: {
+          trigger: ["extension", "chrome", "linkedin prospecting"],
+          probe: "Is the team actually using the extension for prospecting, or has it become more of a 'we have it but don't use it' thing?"
+        },
+        intent: {
+          trigger: ["intent", "buying signals"],
+          probe: "Are those intent signals actually making it into your workflow, or do they just sit in the platform?"
+        }
+      }
+    },
+
+    transition: {
+      standard: "Got it. That gives me good context on Apollo.",
+      ifUserWantsMore: "There's a lot we can dig into there—we'll make it a priority on the screen share. For now, let me capture the rest of your stack so we're prepared."
+    }
+  },
+
+  namedFailureModes: {
+    dataAccuracy: {
+      pattern: "Data accuracy issues",
+      safeReference: "Accuracy issues come up a lot with Apollo"
+    },
+    creditBurn: {
+      pattern: "Credit burn surprise",
+      safeReference: "Credit burn is a common frustration with Apollo"
+    },
+    deliverability: {
+      pattern: "Deliverability issues",
+      safeReference: "Deliverability catches a lot of Apollo users"
+    },
+    complexity: {
+      pattern: "Learning curve / complexity",
+      safeReference: "That's common with Apollo—there's a lot packed in there"
+    },
+    allInOneTradeoff: {
+      pattern: "All-in-one tradeoff",
+      safeReference: "The all-in-one promise is appealing but sometimes one side works better than the other"
+    },
+    phoneQuality: {
+      pattern: "Phone number quality",
+      safeReference: "Phone data tends to be the weaker side"
+    },
+    warmupSkipped: {
+      pattern: "Warmup skipped",
+      safeReference: "A lot of teams don't realize how critical the warmup period is"
+    }
+  },
+
+  neverSay: [
+    "Specific pricing (e.g., 'Apollo starts at $49/month')",
+    "Accuracy percentages (e.g., 'US accuracy is 85-95%')",
+    "Credit economics (e.g., 'Phone reveals cost 8x email reveals')",
+    "Deliverability benchmarks (e.g., 'Keep sends under 200/day')",
+    "Warmup duration (e.g., 'Run warmup for 2-4 weeks')",
+    "Competitor price comparisons (e.g., 'Apollo is 10x cheaper than ZoomInfo')",
+    "How to fix anything",
+    "Tier recommendations",
+    "ROI calculations"
+  ],
+
+  screenShareFlags: {
+    dissatisfied: {
+      condition: "satisfaction <= 2",
+      flag: "PRIORITY: Apollo dissatisfaction—deep dive on {stated_pain_point}"
+    },
+    dataAccuracyNeutral: {
+      condition: "satisfaction == 3 AND pain_point contains 'data' or 'accuracy' or 'bounce'",
+      flag: "Check Apollo bounce rates and data quality"
+    },
+    deliverabilityNeutral: {
+      condition: "satisfaction == 3 AND pain_point contains 'deliverability' or 'spam'",
+      flag: "Review Apollo warmup status and send volume"
+    },
+    apolloZoominfoOverlap: {
+      condition: "tools contains 'Apollo' AND tools contains 'ZoomInfo'",
+      flag: "Redundancy analysis: Apollo vs ZoomInfo data overlap"
+    },
+    apolloEngagementOverlap: {
+      condition: "tools contains 'Apollo' AND (tools contains 'Outreach' OR tools contains 'SalesLoft')",
+      flag: "Redundancy analysis: Apollo vs engagement tool overlap"
+    },
+    fullPlatformImbalance: {
+      condition: "use_case == 'full_platform' AND mentioned 'fallen off'",
+      flag: "Adoption gap: Identify which Apollo capability is underutilized"
+    },
+    deliverabilityPriority: {
+      condition: "pain_point contains 'spam' or 'deliverability' or 'blacklisted'",
+      flag: "PRIORITY: Review warmup status, send volume, domain health"
+    },
+    shelfware: {
+      condition: "pain_point contains 'not using' or 'nobody uses'",
+      flag: "PRIORITY: Potential elimination or training intervention"
+    },
+    creditFrustration: {
+      condition: "pain_point contains 'credits' or 'credit'",
+      flag: "Review credit consumption patterns and tier fit"
+    }
+  }
+};
+
+module.exports = apolloIntelligence;
