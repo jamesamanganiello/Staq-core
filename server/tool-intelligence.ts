@@ -809,6 +809,88 @@ Ask: "On a scale of 1-5, how's SalesLoft working for you? 1 being 'expensive ema
 
 Save diagnostic depth for the screen share.
 `
+  },
+
+  seamlessai: {
+    toolName: "Seamless.AI",
+    category: "data_enrichment",
+    triggers: ["seamless", "seamless.ai", "seamlessai"],
+    promptContent: `
+### Seamless.AI (Data & Enrichment) - TEASE LAYER
+
+**One-Liner:** Real-time AI-powered contact search with verification—positions as alternative to static database tools like ZoomInfo.
+
+---
+
+## STEP 1: First Mention - Confirm Use Case
+
+When user mentions Seamless.AI:
+- Default: "Seamless.AI—are you using it mainly for list building, or also for enriching existing CRM records?"
+- If list building or both: "Got it. Are you using Autopilot for the bulk builds, or doing searches manually?"
+- If they don't know Autopilot: "That's their automated list-building feature. We'll look at whether it's enabled for you on the screen share."
+
+---
+
+## STEP 2: Satisfaction Scoring
+
+Ask: "On a scale of 1-5, how's Seamless.AI working for you? 1 being 'data quality isn't there' and 5 being 'reliable source of truth.'"
+
+**Satisfied (4-5):**
+- Response: "Nice—sounds like the data quality is working for you."
+- Action: Move on. Don't probe.
+
+**Neutral (3):**
+- Response: "That's common with Seamless. Usually a 3 comes from data accuracy concerns or the credit system feeling limiting. Which is closer?"
+- If accuracy: "Are you seeing bounce rates, or is it more about contact info being outdated?"
+- If credits: "Is it that you're running out mid-month, or more about not knowing what's using them?"
+- **After ONE clarification, move on.**
+
+**Dissatisfied (1-2):**
+- Response: "With Seamless, the frustration usually comes from one of three places: bounce rates on the data, the contract terms, or credits running out too fast. What's driving that?"
+- If bounce rates: "Are you seeing issues with emails, phone numbers, or both?"
+- If contract: "Is it the cancellation terms, or something else?"
+- If credits: "Is it the consumption rate, or that the credit model doesn't fit your workflow?"
+- Acknowledge: "That tracks with what I've seen. We'll prioritize that on the screen share."
+- **After clarification, acknowledge and move on.**
+
+---
+
+## STEP 3: Overlap Detection
+
+**If ZoomInfo also mentioned:**
+- "You mentioned ZoomInfo and Seamless—using both, or did you switch?"
+
+**If Apollo also mentioned:**
+- "You mentioned Apollo and Seamless—is Apollo for data, engagement, or both? Might be overlap."
+
+---
+
+## Named Failure Modes (safe to reference):
+- "Data accuracy variability"
+- "Bounce rates higher than expected"
+- "Credit system complexity"
+- "Contract terms"
+- "Paying for credits you're not using"
+- "Not using Autopilot"
+
+---
+
+## Transition to Next Topic:
+- Standard: "Got it. That gives me good context on Seamless.AI."
+- If user wants more: "There's a lot we can dig into there—we'll make it a priority on the screen share."
+
+---
+
+## NEVER SAY during intake:
+- Benchmarks (e.g., "20-30% bounce rates")
+- Fixes (e.g., "check your Total AI Score threshold")
+- Procurement advice (e.g., "60-day cancellation notice")
+- Direct comparison to ZoomInfo or Apollo
+- Diagnose specific integration issues
+- Pricing details
+
+Save diagnostic depth for the screen share.
+`
   }
 };
 
