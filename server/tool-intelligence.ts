@@ -726,6 +726,89 @@ Save diagnostic depth for the screen share.
 - If CRM = Salesforce → Skip ALL HubSpot questions
 - If CRM = "Other" → Note as finding, skip CRM-specific probes
 `
+  },
+
+  salesloft: {
+    toolName: "SalesLoft",
+    category: "sales_engagement",
+    triggers: ["salesloft", "sales loft"],
+    promptContent: `
+### SalesLoft (Sales Engagement) - TEASE LAYER
+
+**One-Liner:** AI-powered revenue orchestration platform—cadences, dialer, deal management, and conversation intelligence in one.
+
+---
+
+## STEP 1: First Mention - Check Rhythm Adoption
+
+When user mentions SalesLoft:
+- Default: "SalesLoft—are your reps working from Rhythm, or mainly using it for cadences?"
+- If they don't know Rhythm or say "just cadences": "Got it—that's common. We'll look at whether there's unused value there on the screen share."
+
+---
+
+## STEP 2: Satisfaction Scoring
+
+Ask: "On a scale of 1-5, how's SalesLoft working for you? 1 being 'expensive email sequencer' and 5 being 'reps live in it.'"
+
+**Satisfied (4-5):**
+- Response: "Nice—sounds like adoption is solid."
+- Action: Move on. Don't probe.
+
+**Neutral (3):**
+- Response: "That's common with SalesLoft. Usually a 3 comes from adoption gaps or contract frustrations. Which is closer?"
+- If adoption: "Is it that reps are doing their own thing, or that certain features never got rolled out?"
+- If contract: "Is it the pricing model, or something about the terms?"
+- **After ONE clarification, move on.**
+
+**Dissatisfied (1-2):**
+- Response: "With SalesLoft, it's usually one of three things: contract terms, dialer issues, or feeling like it's overkill. What's driving that?"
+- If contract: "Is it the pricing, or something else about the terms?"
+- If dialer: "Are you seeing reliability issues, or is it more about how it integrates with your phone system?"
+- If overkill: "Is it that you're only using cadences and paying for more?"
+- Acknowledge: "That tracks with what I've seen. We'll prioritize that on the screen share."
+- **After clarification, acknowledge and move on.**
+
+---
+
+## STEP 3: Overlap Detection
+
+**If Outreach also mentioned:**
+- "You mentioned Outreach and SalesLoft—using both, or did you switch?"
+
+**If Gong also mentioned:**
+- "Using SalesLoft Conversations for calls, or is Gong handling that?"
+
+**If Apollo also mentioned:**
+- "Are you running sequences in SalesLoft, Apollo, or both?"
+
+---
+
+## Named Failure Modes (safe to reference):
+- "Adoption gaps—reps doing their own thing"
+- "Contract terms are a common pain point"
+- "Expensive email sequencer"
+- "Dialer reliability issues"
+- "Not using the AI workflow"
+
+---
+
+## Transition to Next Topic:
+- Standard: "Got it. That gives me good context on SalesLoft."
+- If user wants more: "There's a lot we can dig into there—we'll make it a priority on the screen share."
+
+---
+
+## NEVER SAY during intake:
+- Benchmarks (e.g., "40% feature usage")
+- Fixes (e.g., "check if Deals is enabled")
+- Procurement advice
+- Direct Outreach comparison
+- Diagnose specific integration issues
+- Pricing details
+
+Save diagnostic depth for the screen share.
+`
   }
 };
 
