@@ -1,0 +1,149 @@
+/**
+ * Gong Tool Intelligence for STAQ Intake
+ * 
+ * CRITICAL: Gong has multiple license types (Professional, Forecast, Engage).
+ * Must confirm license type before probing deeper.
+ */
+
+const gongIntelligence = {
+  toolName: "Gong",
+  category: "conversation_intelligence",
+  
+  triggers: [
+    "gong",
+    "gong.io"
+  ],
+
+  conversationRules: {
+    
+    // STEP 1: First mention - confirm license type
+    firstMention: {
+      instruction: "Gong has three license types. Most teams only have Professional. Confirming this shows expertise.",
+      responses: {
+        default: "Gong's a big investment. Are you using just the core call recording, or do you have Forecast or Engage too?",
+        ifSalesforceAlreadyMentioned: "Gong with Salesforce—is the sync actually working, or is that something that's been on the backburner?",
+        ifUncertain: "Got it—Gong. Do you know if you're on the standard license or if you have the forecasting add-on?"
+      },
+      doNot: [
+        "Assume they have Forecast or Engage",
+        "Ask about specific features before confirming license",
+        "Mention pricing or cost",
+        "Say 'Gong is expensive'"
+      ]
+    },
+
+    // STEP 2: Branch based on license type
+    licenseBranching: {
+      professionalOnly: {
+        followUp: "Is your team actually using it for coaching, or has it mostly become a call library?"
+      },
+      hasForecast: {
+        followUp: "Is Forecast actually driving your pipeline reviews, or are you still mostly in spreadsheets?"
+      },
+      hasEngage: {
+        followUp: "How's Engage working for your sequences?"
+      }
+    },
+
+    // STEP 3: Satisfaction scoring
+    satisfactionScoring: {
+      question: "On a scale of 1-5, how's Gong working for you? 1 being 'expensive call recorder' and 5 being 'couldn't run pipeline reviews without it.'",
+      responsesByScore: {
+        high: {
+          scores: [4, 5],
+          response: "Nice—sounds like you've got adoption dialed in.",
+          action: "Move to next tool"
+        },
+        neutral: {
+          scores: [3],
+          response: "A 3 usually means one of two things: managers aren't using it for coaching, or the CRM sync never got set up right. Which one rings true?",
+          action: "ONE follow-up probe max, then move on"
+        },
+        dissatisfied: {
+          scores: [1, 2],
+          response: "Got it—what's the main frustration? Is it adoption, or is the data just not flowing where it needs to go?",
+          action: "Probe specific pain, flag for screen share"
+        }
+      }
+    }
+  },
+
+  // Named failure modes - safe to reference as patterns
+  namedFailureModes: {
+    expensiveCallRecorder: {
+      pattern: "Recording but not coaching",
+      safeReference: "A lot of teams end up with Gong as an expensive call recorder—managers don't have time to actually review calls"
+    },
+    crmSyncBroken: {
+      pattern: "Salesforce sync never configured or broken",
+      safeReference: "Gong's Salesforce integration is powerful but I've seen a lot of setups where the sync was never fully configured"
+    },
+    forecastShelfware: {
+      pattern: "Paying for Forecast but not using it",
+      safeReference: "Teams sometimes end up on Forecast but still run pipeline reviews in spreadsheets"
+    },
+    adoptionGap: {
+      pattern: "Recording adoption fine, coaching adoption poor",
+      safeReference: "Recording adoption is usually fine—it's the coaching workflows where things fall off"
+    },
+    trackerOverload: {
+      pattern: "Too many trackers, signal lost in noise",
+      safeReference: "Some teams go overboard with trackers and the signal gets lost in noise"
+    }
+  },
+
+  // NEVER say these - diagnostic/procurement value
+  neverSay: [
+    "Specific pricing (e.g., '$X per seat')",
+    "Adoption benchmarks (e.g., '80% of calls reviewed is healthy')",
+    "Talk ratio benchmarks (e.g., '≤65% is healthy')",
+    "How to fix CRM sync issues",
+    "Gong vs. Chorus comparison",
+    "ROI statistics (e.g., '312% ROI')",
+    "Tier recommendations",
+    "Specific interaction stat thresholds"
+  ],
+
+  // Overlap detection
+  overlapDetection: {
+    gongAndChorus: {
+      trigger: ["chorus", "zoominfo conversation intelligence"],
+      response: "Wait—you have both Gong and Chorus? How did that happen?",
+      flag: "URGENT: Duplicate conversation intelligence tools"
+    }
+  },
+
+  // Screen share flags
+  screenShareFlags: {
+    dissatisfied: {
+      condition: "satisfaction <= 2",
+      flag: "PRIORITY: Gong dissatisfaction—deep dive on {stated_pain_point}"
+    },
+    forecastNotOperationalized: {
+      condition: "has_forecast AND satisfaction <= 3",
+      flag: "Check if Forecast is actually operationalized or shelfware"
+    },
+    crmSyncIssues: {
+      condition: "has_salesforce AND (mentioned 'sync' OR 'integration' OR 'not working')",
+      flag: "PRIORITY: Verify Gong-Salesforce sync configuration"
+    },
+    adoptionConcern: {
+      condition: "pain_point contains 'adoption' OR 'nobody uses' OR 'don't use'",
+      flag: "Pull Gong usage analytics—potential seat reduction"
+    },
+    coachingConcern: {
+      condition: "pain_point contains 'coaching' OR 'managers' OR 'review'",
+      flag: "Review manager coaching metrics in Gong"
+    },
+    costConcern: {
+      condition: "pain_point contains 'expensive' OR 'cost' OR 'paying a lot'",
+      flag: "ROI analysis: actual usage vs. cost"
+    },
+    duplicateCI: {
+      condition: "tools contains 'Gong' AND tools contains 'Chorus'",
+      flag: "URGENT: Duplicate conversation intelligence—investigate consolidation"
+    }
+  }
+};
+
+module.exports = gongIntelligence;
