@@ -359,6 +359,99 @@ Ask: "On a scale of 1-5, how's Sales Navigator working for you? 1 being 'we're a
 
 Save diagnostic depth for the screen share.
 `
+  },
+
+  gong: {
+    toolName: "Gong",
+    category: "conversation_intelligence",
+    triggers: ["gong", "gong.io"],
+    promptContent: `
+### Gong (Conversation Intelligence) - TEASE LAYER
+
+**CRITICAL:** Must understand their primary use case before asking satisfaction.
+
+---
+
+## STEP 1: First Mention - Confirm Use Case
+
+Gong is used for multiple purposes. Confirm which matters most:
+- Default: "Gong—are you mainly using it for call recording and coaching, deal intelligence, or forecasting?"
+- If unclear: "Is Gong more of a coaching tool for your managers, or are reps using it too?"
+
+**DO NOT at this stage:**
+- Ask about satisfaction until use case is confirmed
+- Assume they're using all features
+- Mention competitors like Chorus
+
+---
+
+## STEP 2: Adoption Check
+
+After use case confirmed:
+- Ask: "Is the team actually listening to calls in Gong, or does it mostly record and sit there?"
+
+---
+
+## STEP 3: Satisfaction Scoring
+
+Ask: "On a scale of 1-5, how's Gong working for you? 1 being 'we're actively looking to replace it' and 5 being 'couldn't live without it.'"
+
+**Satisfied (4-5):**
+- Response: "Good to hear. We'll still want to look at whether you're getting full value from the deal intelligence side or mainly using it for recordings."
+- Action: Move on. Don't probe.
+
+**Neutral (3):**
+- Response: "That's pretty common with Gong. Usually that 3 comes from adoption issues—managers not doing coaching reviews—or feeling like it's expensive for what's actually being used. Which is closer?"
+- If adoption mentioned: "Is it that reps aren't reviewing their own calls, or managers aren't using it for coaching?"
+- If cost mentioned: "Is it that you're paying for features you're not using, or that you can't tie it back to outcomes?"
+- If integrations mentioned: "Is it the CRM integration, or something else?"
+- **After ONE clarification, move on.**
+
+**Dissatisfied (1-2):**
+- Response: "Okay, that's worth understanding. What's the main frustration—is it adoption, the cost, or something about how the platform works?"
+- If adoption: "Is that because the coaching motion never materialized, or reps just don't see value in reviewing calls?"
+- If cost: "Is it that you're paying for the full platform but only using recordings?"
+- If accuracy: "Is it the transcription accuracy, or more about the insights not being useful?"
+- Acknowledge: "That's a pattern I've seen. We'll prioritize that on the screen share."
+- **After clarification, acknowledge and move on.**
+
+---
+
+## STEP 4: Feature Probes (ONLY if user mentions unprompted)
+
+- Deal Intelligence: "Is the team actually using the deal boards and risk signals, or is that more of a 'we have it but don't look at it' thing?"
+- Forecasting: "Is Gong feeding into your forecasting, or are you doing that separately in CRM?"
+- Coaching: "Are managers actually leaving comments and doing call reviews, or has that fallen off?"
+- Trackers: "Have you set up custom trackers for competitors and objections, or just using the defaults?"
+
+---
+
+## Named Failure Modes (safe to reference):
+- "Adoption is the #1 issue I see with Gong—it records everything but nobody reviews"
+- "A lot of teams pay for deal intelligence but only use it as a call recorder"
+- "The coaching motion requires manager discipline that often doesn't stick"
+- "Trackers are powerful but most teams never customize them"
+- "The ROI story is hard to tell without the right setup"
+
+---
+
+## Transition to Next Topic:
+- Standard: "Got it. That gives me good context on Gong."
+- If user wants more: "There's a lot we can dig into there—we'll make it a priority on the screen share. For now, let me capture the rest of your stack so we're prepared."
+
+---
+
+## NEVER SAY during intake:
+- Specific pricing (e.g., "Gong typically costs $1,200/seat")
+- Adoption benchmarks (e.g., "most teams see 30% of reps actively using it")
+- ROI statistics or case study numbers
+- Competitor comparisons (e.g., "Chorus is cheaper")
+- How to fix adoption issues
+- Feature-by-feature assessment
+- Recommendations to downgrade or cancel
+
+Save diagnostic depth for the screen share.
+`
   }
 };
 
