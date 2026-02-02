@@ -87,13 +87,24 @@ Key endpoints:
   - Export transcript as text file
 
 ### AI Conversation Design
-The Claude system prompt (v2.0.0, 2026-01-28) implements:
+The Claude system prompt (v2.5.0, 2026-01-31) implements:
 - Natural conversation flow covering: company context → CRM → tool inventory → integrations → pain points → attribution → logistics
+- **Real-time URL extraction**: When user provides company URL, system fetches and parses the website to extract accurate company information (meta description, headings, main content)
+- Apollo.io knowledge base with smart follow-ups, satisfaction probes, and red flag detection
+- "Engage Before Moving On" rule: acknowledge pain points, ask clarifying question, then proceed
 - Skip logic based on previous answers (e.g., don't ask about Salesforce if they use HubSpot)
 - Collects seat counts and costs for each tool when known
 - Generates estimated health score (0-100) in preliminary analysis
-- JSON summary with company_context, crm, tools[], integrations, pain_points, attribution_readiness, logistics
+- JSON summary with contact, company_context, crm, tools[], integrations, pain_points, attribution_readiness, logistics
 - Version tracking logged at server startup
+
+### URL Extraction System
+- **Location**: server/url-extractor.ts
+- **Dependencies**: axios (HTTP requests), cheerio (HTML parsing)
+- **Functionality**: Fetches company websites and extracts title, meta description, headings, and main content
+- **Security**: SSRF protections (blocks private IPs, localhost, only HTTP/HTTPS), 5MB content limit
+- **Context gating**: Only extracts URLs early in conversation or when explicitly asked for company URL
+- **Fallback**: If fetch fails, prompts user for company description instead of guessing
 
 ### Shared Code Structure
 The `shared/` directory contains code used by both frontend and backend:
