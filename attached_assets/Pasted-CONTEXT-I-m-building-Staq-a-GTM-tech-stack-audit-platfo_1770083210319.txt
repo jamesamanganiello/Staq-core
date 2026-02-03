@@ -1,22 +1,24 @@
-import type { Express } from "express";
-import type { Server } from "http";
-import { storage } from "./storage";
-import { api } from "@shared/routes";
-import Anthropic from "@anthropic-ai/sdk";
-import { randomUUID } from "crypto";
-import { extractWebsiteContent, formatExtractedContent } from "./url-extractor";
-import { detectToolsInMessage, generateToolPromptInjection } from "./tool-intelligence";
+CONTEXT:
+I'm building Staq, a GTM tech stack audit platform. We have a working conversational intake system powered by Claude API. The intake collects baseline context in 5-10 minutes to prepare for a screen share audit call. The system has tool intelligence modules in /server/tool-intelligence/ for ZoomInfo, Apollo, Sales Navigator, Gong, Salesforce, HubSpot, SalesLoft, Seamless.AI, and Outreach.
 
-const anthropic = new Anthropic({
-  apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || "dummy",
-  baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
-});
+A full end-to-end test revealed critical structural problems: the conversation ran 40+ exchanges instead of 20, skipped Phase 4 (sales motion) entirely, asked for seat counts and costs during intake (screen share data), and went too deep on individual tools. The system prompt needs to be rewritten with hard structural constraints.
 
-// System prompt version tracking
-const PROMPT_VERSION = "3.0.0";
-const PROMPT_UPDATED = "2026-02-03";
+GOAL:
+Rewrite the system prompt for the Claude API conversational intake with:
+1. Hard exchange budget (20 max Staq messages)
+2. Mandatory Phase 4 (sales motion) before any tool questions
+3. Explicit prohibition on asking for seat counts, costs, or integration details during intake
+4. Tool questions limited to: identify tool → satisfaction 1-5 → ONE tease layer follow-up → move on
+5. Remove scheduling questions (Calendly on completion screen handles this)
+6. Add Sales Navigator to mandatory tool sequence
 
-const SYSTEM_PROMPT = `You are Staq, an AI assistant conducting an intake conversation for a GTM tech stack health check. Your goal is to gather baseline context in 5-10 minutes—enough to prepare for a productive screen share call, not to do the full audit here.
+REQUIREMENTS:
+
+The COMPLETE system prompt below should REPLACE the existing system prompt in its entirety. Do not merge or patch—full replacement.
+
+=== BEGIN SYSTEM PROMPT ===
+
+You are Staq, an AI assistant conducting an intake conversation for a GTM tech stack health check. Your goal is to gather baseline context in 5-10 minutes—enough to prepare for a productive screen share call, not to do the full audit here.
 
 ## YOUR PERSONALITY
 - Warm and professional—you're a helpful consultant, not a form
@@ -52,7 +54,7 @@ If you reach message 17, wrap up and move to closing regardless of where you are
 ## QUESTION FLOW — FOLLOW THIS SEQUENCE
 
 ### PHASE 1: INTRODUCTION (1 message)
-First message asks for name (already sent).
+"Hey! I'm Staq, and I'll be helping prepare for your GTM tech stack audit. This takes about 5-10 minutes. Let's start—what's your name?"
 
 ### PHASE 2: CONTACT INFO (2-3 messages)
 - Name → Email → Role
@@ -60,23 +62,7 @@ First message asks for name (already sent).
 
 ### PHASE 3: COMPANY CONTEXT (2-3 messages)
 - Ask for company website URL
-- When they provide a URL:
-
-   **PRIORITY 1 - Use extracted website content if available:**
-   If you see [WEBSITE CONTENT EXTRACTED], use that data to describe their company accurately.
-   
-   **PRIORITY 2 - Use your training knowledge for well-known companies:**
-   If website fetch failed BUT you recognize the company from your training data (e.g., PitchBook, ZoomInfo, Salesforce, Gong, Outreach, Stripe, HubSpot, Snowflake, etc.), respond with what you KNOW.
-   
-   Example: "Got it—PitchBook, the financial data and research platform for PE, VC, and M&A. You're selling to investors, deal teams, that world. Does that sound right?"
-   
-   **PRIORITY 3 - Ask only for genuinely obscure companies:**
-   Only say "I couldn't pull details" if BOTH conditions are true:
-   - The website fetch failed AND
-   - You genuinely don't recognize the company from your training data
-   
-   In that case: "I'm not familiar with [company]—can you give me the quick pitch? What does your company sell and who's your target customer?"
-
+- When they provide a URL: Extract company name, what they sell, industry, target customer, and any size signals. Present what you found and ask them to confirm or correct. If you cannot determine these with confidence, ASK—do not guess.
 - Ask sales team size
 - If team size > 5, ask team composition: "How's the team structured—AEs and SDRs split out, or full-cycle reps?"
 - If team size 1-2, skip composition
@@ -506,6 +492,9 @@ If they say list building or both:
 If they don't know what Autopilot is:
 "That's their automated list-building feature. We'll look at whether it's enabled for you on the screen share."
 
+If enrichment only:
+"Okay. We'll look at whether you're getting the credit value out of that on the screen share."
+
 **Satisfaction Probes:**
 
 Prompt: "Quick gut check—how's Seamless.AI working for you? 1 being 'actively looking to replace' and 5 being 'couldn't live without it.'"
@@ -591,9 +580,8 @@ Automatically flag these patterns:
 
 ## COMPLETION SUMMARY
 
-When the conversation is complete, generate a JSON summary wrapped in \`\`\`json tags:
+When the conversation is complete, generate a JSON summary:
 
-\`\`\`json
 {
   "contact": {
     "name": "",
@@ -640,11 +628,6 @@ When the conversation is complete, generate a JSON summary wrapped in \`\`\`json
     "flags_for_call": []
   }
 }
-\`\`\`
-
-After outputting the JSON, add "INTAKE_COMPLETE" on a new line to signal you're done.
-
-IMPORTANT: The preliminary_analysis is for internal admin use only—the customer will NOT see it. Keep your closing message warm and focused on next steps.
 
 ## IMPORTANT REMINDERS
 
@@ -652,359 +635,12 @@ IMPORTANT: The preliminary_analysis is for internal admin use only—the custome
 - Your job is to make the prospect think "this person really knows their stuff" through smart questions and named failure modes—NOT through giving away answers.
 - If you're ever unsure whether to ask another question or move on, MOVE ON.
 - The prospect's time is more valuable than additional data points. Respect the 20-message budget.
-- When the prospect says "not sure," that IS useful data. Flag it for screen share and move on.`;
+- When the prospect says "not sure," that IS useful data. Flag it for screen share and move on.
 
-const FIRST_MESSAGE = "Hey! I'm Staq, and I'll be helping prepare for your GTM tech stack audit. This takes about 5-10 minutes. Let's start—what's your name?";
+=== END SYSTEM PROMPT ===
 
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express
-): Promise<Server> {
-  
-  // Log prompt version on startup
-  console.log(`[staq] System prompt version: ${PROMPT_VERSION} (updated: ${PROMPT_UPDATED})`);
-  
-  // Start a new conversation
-  app.post(api.chat.start.path, async (req, res) => {
-    try {
-      const sessionId = randomUUID();
-
-      const conversationLog = await storage.createConversationLog({
-        sessionId,
-        fullTranscript: [],
-      });
-
-      // Store the first assistant message
-      await storage.createMessage({
-        conversationLogId: conversationLog.id,
-        role: "assistant",
-        content: FIRST_MESSAGE
-      });
-
-      res.status(201).json({
-        sessionId,
-        conversationId: conversationLog.id,
-        message: FIRST_MESSAGE,
-      });
-
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Failed to start conversation" });
-    }
-  });
-
-  // Handle user message
-  app.post(api.chat.message.path, async (req, res) => {
-    try {
-      const { message } = api.chat.message.input.parse(req.body);
-      const sessionId = req.params.sessionId as string;
-
-      const conversationLog = await storage.getConversationLogBySessionId(sessionId);
-      if (!conversationLog) {
-        return res.status(404).json({ message: "Session not found" });
-      }
-
-      // Detect URLs in the message - look for company website URLs
-      const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][-a-zA-Z0-9]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s]*)?/gi;
-      const urls = message.match(urlRegex);
-      let websiteContext = "";
-      
-      // Get conversation history to check if we're in the company context phase
-      const existingHistory = await storage.getMessages(conversationLog.id);
-      const isEarlyConversation = existingHistory.length < 10;
-      const lastAssistantMessage = existingHistory.filter(m => m.role === 'assistant').pop()?.content || '';
-      const askedForUrl = /url|website|company|domain/i.test(lastAssistantMessage);
-      
-      // Only fetch URLs if we're early in conversation or explicitly asked for company URL
-      if (urls && urls.length > 0 && (isEarlyConversation || askedForUrl)) {
-        const url = urls[0];
-        
-        // Skip common non-company URLs
-        const skipDomains = ['calendly.com', 'google.com', 'linkedin.com', 'twitter.com', 'facebook.com', 'youtube.com', 'zoom.us'];
-        const isSkippedDomain = skipDomains.some(domain => url.toLowerCase().includes(domain));
-        
-        if (!isSkippedDomain) {
-          console.log(`[URL Extractor] Fetching content from: ${url}`);
-          
-          const extracted = await extractWebsiteContent(url);
-          
-          if (extracted.success) {
-            websiteContext = `\n\n[WEBSITE CONTENT EXTRACTED - USE THIS FOR COMPANY CONTEXT]\n${formatExtractedContent(extracted)}\n[END WEBSITE CONTENT]`;
-            console.log(`[URL Extractor] Successfully extracted content from ${extracted.domain}`);
-          } else {
-            websiteContext = `\n\n[WEBSITE FETCH FAILED for ${extracted.domain}]\nThe website could not be fetched. However, if you recognize this company from your training data (e.g., it's a well-known B2B company), describe what you know about them and ask "Does that sound right?" Only ask for a description if you genuinely don't recognize the company.\n[END WEBSITE CONTENT]`;
-            console.log(`[URL Extractor] Failed to fetch ${url}: ${extracted.error}`);
-          }
-        }
-      }
-
-      // Store user message
-      await storage.createMessage({
-        conversationLogId: conversationLog.id,
-        role: "user",
-        content: message
-      });
-
-      // Get full conversation history
-      const history = await storage.getMessages(conversationLog.id);
-      
-      // Format for Anthropic
-      const messages = history.map(m => ({
-        role: m.role as "user" | "assistant",
-        content: m.content
-      }));
-
-      // Detect mentioned tools across all user messages in this conversation
-      const mentionedTools: string[] = [];
-      for (const msg of history) {
-        if (msg.role === 'user') {
-          const tools = detectToolsInMessage(msg.content);
-          for (const tool of tools) {
-            if (!mentionedTools.includes(tool)) {
-              mentionedTools.push(tool);
-            }
-          }
-        }
-      }
-      
-      // Generate tool-specific intelligence injection
-      const toolIntelligence = generateToolPromptInjection(mentionedTools);
-      if (mentionedTools.length > 0) {
-        console.log(`[Tool Intelligence] Injected knowledge for: ${mentionedTools.join(', ')}`);
-      }
-
-      // Augment system prompt with website context and tool intelligence
-      let augmentedPrompt = SYSTEM_PROMPT;
-      if (websiteContext) {
-        augmentedPrompt += websiteContext;
-      }
-      if (toolIntelligence) {
-        augmentedPrompt += toolIntelligence;
-      }
-
-      // Call Claude with full history
-      const response = await anthropic.messages.create({
-        model: "claude-sonnet-4-5",
-        max_tokens: 2048,
-        system: augmentedPrompt,
-        messages: messages,
-      });
-
-      const assistantText = response.content[0].type === 'text' ? response.content[0].text : "";
-
-      // Check for completion - detect JSON block in response
-      let isComplete = false;
-      let extractedData = null;
-      let preliminaryAnalysis = null;
-      let displayMessage = assistantText;
-
-      // Extract JSON from the response (completion indicator)
-      const jsonMatch = assistantText.match(/```json\n([\s\S]*?)\n```/);
-      if (jsonMatch) {
-        isComplete = true;
-        
-        try {
-          const fullData = JSON.parse(jsonMatch[1]);
-          
-          // Separate preliminary_analysis (admin-only) from customer data
-          preliminaryAnalysis = fullData.preliminary_analysis || null;
-          delete fullData.preliminary_analysis;
-          extractedData = fullData;
-          
-          // Clean up message for display - remove JSON block completely
-          // Keep only the closing statement before the JSON
-          displayMessage = assistantText
-            .replace(/```json\n[\s\S]*?\n```/g, "")
-            .replace("INTAKE_COMPLETE", "")
-            .trim();
-          
-          // If nothing left after removing JSON, provide a default closing
-          if (!displayMessage) {
-            displayMessage = "Perfect! That gives me everything I need to prep for our call.";
-          }
-          
-          // Create or update customer record (using new JSON structure)
-          const customer = await storage.createCustomer({
-            contactName: extractedData?.contact?.name,
-            contactEmail: extractedData?.contact?.email,
-            companyName: extractedData?.company_context?.name,
-          });
-          
-          // Update conversation log with customer link and completion data
-          await storage.updateConversationLog(conversationLog.id, {
-            customerId: customer.id,
-            status: "completed",
-            completedAt: new Date(),
-            extractedData: extractedData,
-            preliminaryAnalysis: preliminaryAnalysis,
-          });
-        } catch (e) {
-          console.error("Failed to parse extracted data JSON", e);
-        }
-      }
-
-      // Store assistant message (full text for record)
-      await storage.createMessage({
-        conversationLogId: conversationLog.id,
-        role: "assistant",
-        content: assistantText
-      });
-
-      // Update full transcript
-      const updatedHistory = await storage.getMessages(conversationLog.id);
-      await storage.updateConversationLog(conversationLog.id, {
-        fullTranscript: updatedHistory.map(m => ({ role: m.role, content: m.content }))
-      });
-
-      res.json({
-        message: displayMessage,
-        isComplete,
-        extractedData
-      });
-
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Get conversation history
-  app.get(api.chat.history.path, async (req, res) => {
-    const sessionId = req.params.sessionId as string;
-    const result = await storage.getConversationLogWithCustomer(sessionId);
-    if (!result) {
-      return res.status(404).json({ message: "Session not found" });
-    }
-    
-    const rawMessages = await storage.getMessages(result.log.id);
-    
-    // Filter out JSON blocks from assistant messages for display
-    const messages = rawMessages.map(msg => {
-      if (msg.role === "assistant" && msg.content.includes("```json")) {
-        let cleanContent = msg.content
-          .replace(/```json\n[\s\S]*?\n```/g, "")
-          .replace("INTAKE_COMPLETE", "")
-          .trim();
-        
-        // If nothing left, provide default closing
-        if (!cleanContent) {
-          cleanContent = "Perfect! That gives me everything I need to prep for our call.";
-        }
-        
-        return { ...msg, content: cleanContent };
-      }
-      return msg;
-    });
-    
-    // Filter out admin-only data (preliminaryAnalysis) before sending to client
-    const { preliminaryAnalysis, ...safeConversation } = result.log;
-    
-    res.json({ conversation: safeConversation, messages, customer: result.customer });
-  });
-
-  // ============= ADMIN ROUTES =============
-  
-  // Admin login
-  app.post("/api/admin/login", (req, res) => {
-    const { password } = req.body;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    
-    if (!adminPassword) {
-      return res.status(500).json({ message: "Admin password not configured" });
-    }
-    
-    if (password === adminPassword) {
-      // Set session cookie
-      res.cookie("admin_session", "authenticated", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      });
-      return res.json({ success: true });
-    }
-    
-    return res.status(401).json({ message: "Invalid password" });
-  });
-  
-  // Admin logout
-  app.post("/api/admin/logout", (req, res) => {
-    res.clearCookie("admin_session");
-    res.json({ success: true });
-  });
-  
-  // Admin auth check middleware
-  const requireAdmin = (req: any, res: any, next: any) => {
-    const adminCookie = req.cookies?.admin_session;
-    if (adminCookie === "authenticated") {
-      return next();
-    }
-    return res.status(401).json({ message: "Unauthorized" });
-  };
-  
-  // Get all sessions (admin)
-  app.get("/api/admin/sessions", requireAdmin, async (req, res) => {
-    try {
-      const results = await storage.getAllConversationsWithCustomers();
-      
-      const sessions = results.map(({ log, customer }) => ({
-        id: log.id,
-        sessionId: log.sessionId,
-        companyName: customer?.companyName || (log.extractedData as any)?.company_context?.name || "Unknown",
-        contactName: customer?.contactName || (log.extractedData as any)?.contact?.name || "Unknown",
-        status: log.status,
-        startedAt: log.startedAt,
-        completedAt: log.completedAt,
-        crmType: (log.extractedData as any)?.crm?.name || null,
-      }));
-      
-      res.json({ sessions });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Failed to fetch sessions" });
-    }
-  });
-  
-  // Get single session details (admin)
-  app.get("/api/admin/sessions/:id", requireAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const result = await storage.getConversationWithCustomerById(id);
-      
-      if (!result) {
-        return res.status(404).json({ message: "Session not found" });
-      }
-      
-      const messages = await storage.getMessages(result.log.id);
-      
-      res.json({
-        log: result.log,
-        customer: result.customer,
-        messages,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Failed to fetch session" });
-    }
-  });
-  
-  // Update admin notes
-  app.patch("/api/admin/sessions/:id/notes", requireAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { notes } = req.body;
-      
-      const updated = await storage.updateConversationLog(id, {
-        adminNotes: notes,
-        adminNotesUpdatedAt: new Date(),
-      });
-      
-      res.json({ success: true, adminNotesUpdatedAt: updated.adminNotesUpdatedAt });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Failed to update notes" });
-    }
-  });
-
-  return httpServer;
-}
+TECHNICAL NOTES:
+- This prompt replaces the ENTIRE existing system prompt for the Claude API integration
+- The tool intelligence modules in /server/tool-intelligence/ should be updated to match these knowledge base entries
+- The completion screen already has Calendly embedded—no changes needed there
+- Node.js/Express backend, Claude API, SQLite database

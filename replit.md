@@ -87,16 +87,36 @@ Key endpoints:
   - Export transcript as text file
 
 ### AI Conversation Design
-The Claude system prompt (v2.9.0, 2026-02-02) implements:
-- Natural conversation flow covering: company context → CRM → tool inventory → integrations → pain points → attribution → logistics
-- **Real-time URL extraction**: When user provides company URL, system fetches and parses the website to extract accurate company information (meta description, headings, main content)
-- **Well-known company recognition**: If URL fetch fails (403, etc.), Claude uses training knowledge for recognized companies (PitchBook, Gong, Salesforce, etc.) before asking user
-- Tool intelligence modules (Apollo, ZoomInfo) with TEASE LAYER approach—smart follow-ups, satisfaction probes, and red flag detection
-- "Engage Before Moving On" rule: acknowledge pain points, ask clarifying question, then proceed
-- Skip logic based on previous answers (e.g., don't ask about Salesforce if they use HubSpot)
-- Collects seat counts and costs for each tool when known
-- Generates estimated health score (0-100) in preliminary analysis
-- JSON summary with contact, company_context, crm, tools[], integrations, pain_points, attribution_readiness, logistics
+The Claude system prompt (v3.0.0, 2026-02-03) implements:
+
+**Hard Structural Constraints:**
+- 20 Staq message budget (wraps up at message 17 regardless of progress)
+- Mandatory Phase 4 (sales motion) BEFORE any tool questions
+- NEVER asks seat counts, costs, contract details, or integration specifics during intake
+- Tool questions limited to: identify → satisfaction 1-5 → ONE tease layer follow-up → move on
+- No scheduling questions (Calendly on completion screen)
+
+**Conversation Flow:**
+1. Phase 1-2: Welcome + Contact Info (3 messages)
+2. Phase 3: Company Context (2-3 messages) with URL extraction
+3. Phase 4: Sales Motion (3-4 messages) - determines tool-fit analysis
+4. Phase 5: Tool Inventory (6-8 messages) - CRM → Gong → Sales Engagement → Sales Navigator → Data/Enrichment → Other
+5. Phase 6: Pain Points + Closing (2-3 messages)
+
+**Tool Intelligence Features:**
+- STAQ Knowledge Base embedded in prompt with all 9 tools
+- Satisfaction probes with tool-specific failure modes
+- Overlap detection for redundant tools
+- Fit logic based on sales motion (e.g., Gong fit depends on call-heavy vs email)
+
+**URL Extraction:**
+- Real-time website parsing for company context
+- Fallback to Claude training knowledge for well-known companies
+- Only asks user for genuinely obscure companies
+
+**Completion Summary:**
+- New JSON structure with sales_motion, tool_fit_signals, potential_mismatches
+- Preliminary analysis includes flags for screen share prep
 - Version tracking logged at server startup
 
 ### URL Extraction System
