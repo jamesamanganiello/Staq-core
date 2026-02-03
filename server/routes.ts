@@ -59,7 +59,7 @@ First message asks for name (already sent).
 ### PHASE 2: CONTACT INFO (2-3 messages)
 - Name → Email → Role
 - For email, ask: "What's your email? I'll use it to send over your audit prep once we're done here."
-- For role, offer options: "Are you leading sales, ops, RevOps, or something else?"
+- For role, ask: "What's your role?"
 
 ### PHASE 3: COMPANY CONTEXT (2-3 messages)
 - Ask for company website URL
