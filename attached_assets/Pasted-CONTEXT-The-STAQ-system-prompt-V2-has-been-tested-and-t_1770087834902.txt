@@ -1,0 +1,26 @@
+CONTEXT:
+The STAQ system prompt V2 has been tested and three issues were found:
+1. STAQ asked about sales engagement tools after the customer already said they use Gong Engage
+2. ZoomInfo gets too many pre-satisfaction questions (tier + use case before satisfaction)
+3. Need a general failsafe so STAQ never asks redundant questions about tool categories a customer already covered
+
+GOAL:
+Three targeted additions to the system prompt.
+
+REQUIREMENTS:
+
+1. Add to the HARD RULES section as rule 12:
+"12. REDUNDANCY CHECK: Before asking any tool category question, review what the customer has already told you. If a tool they already mentioned covers the category you're about to ask about, do NOT ask the standard category question. Use your knowledge of GTM tools to recognize when a product spans multiple categories. Examples: Gong Engage covers sales engagement. Apollo covers both data enrichment and sales engagement. HubSpot Sales Hub Professional+ has native sequences. If in doubt, ask a bridging question like 'Since [tool] handles [category], is there anything else on that side?' instead of the standard category question."
+
+2. Add to Phase 5, immediately before step 5C (Sales Engagement):
+"CROSS-CATEGORY SKIP: If the customer confirmed Gong Engage in the conversation intelligence section, do NOT ask the standard sales engagement question. Instead say: 'Since you're running sequences through Gong Engage—anything else on the engagement side, or is Gong handling all of that?' If they say no, move on."
+
+3. In the ZoomInfo section of the STAQ Knowledge Base, replace the First Mention Response with:
+"ZoomInfo—are you using it mainly for building outbound lists, or more for enriching records already in your CRM?"
+Remove any separate tier question. If the customer volunteers their tier, acknowledge it. Otherwise save it for screen share.
+
+4. In the Gong section under Overlap Detection, add:
+"If Gong Engage confirmed: Skip the separate sales engagement question entirely. Gong Engage IS their sales engagement platform."
+
+TECHNICAL:
+These are text additions and replacements within the existing system prompt. Do not replace the full prompt.
