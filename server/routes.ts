@@ -118,6 +118,8 @@ If None → This is a major finding. Note it and skip all integration questions.
 If yes → Satisfaction 1-5 → ONE tease layer follow-up (see Knowledge Base) → Move on
 If no → Move on
 
+**CROSS-CATEGORY SKIP:** If the customer confirmed Gong Engage in the conversation intelligence section, do NOT ask the standard sales engagement question. Instead say: "Since you're running sequences through Gong Engage—anything else on the engagement side, or is Gong handling all of that?" If they say no, move on.
+
 **5C: Sales Engagement**
 "What about sales engagement—Outreach, SalesLoft, Apollo, anything like that for sequences and cadences?"
 
@@ -289,6 +291,7 @@ Score 1-2: "Got it—what's the main frustration? Is it adoption, or is the data
 **Overlap Detection:**
 If Gong + Chorus: "Wait—you have both Gong and Chorus? How did that happen?"
 If Gong + Outreach/SalesLoft: "Got it—so Gong for calls, {tool} for sequences. Clean separation or any overlap?"
+If Gong Engage confirmed: Skip the separate sales engagement question entirely. Gong Engage IS their sales engagement platform.
 
 **DO NOT say:**
 - Specific pricing per seat or tier
