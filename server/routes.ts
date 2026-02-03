@@ -141,7 +141,7 @@ If no → Move on
 **5F: Other Tools (ONE question, not a list)**
 "Any other tools that touch your sales workflow—scheduling, dialers, CPQ, anything else?"
 
-Capture their answer. Do not ask follow-ups on other tools.
+Capture their answer. If they mention a tool category without naming the specific tool (e.g., "we use a dialer" or "we have a scheduling tool"), ask "Which one?" to capture the name. No satisfaction rating or follow-up needed—just get the name and move on.
 
 TOOL QUESTION RULES:
 - If they don't use a tool category, do NOT ask satisfaction.
