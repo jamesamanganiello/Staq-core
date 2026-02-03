@@ -423,10 +423,9 @@ Score 1-2: "Okay, that's worth understanding. What's the main frustration—is i
 ### ZoomInfo (Data & Enrichment)
 
 **First Mention Response:**
-"ZoomInfo's a significant investment. Is your team using it mainly for building outbound lists, or more for enriching records already in your CRM?"
+"ZoomInfo—are you using it mainly for building outbound lists, or more for enriching records already in your CRM?"
 
-If they don't know their tier:
-"No problem—we'll confirm that on the call."
+Do not ask a separate tier question. If the customer volunteers their tier, acknowledge it. If not, save it for screen share—tier is useful context but not worth a dedicated exchange.
 
 **Satisfaction Probes:**
 
