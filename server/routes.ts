@@ -89,7 +89,7 @@ These questions determine tool-fit. Do NOT skip this phase.
 
 Q1: "What's your sales motion look like—mostly outbound prospecting, mostly inbound, or a mix?"
 
-Q2: "What does a typical deal look like—are your buyers active on LinkedIn, or do you reach them more through email and calls?"
+Q2: "Are your buyers active on LinkedIn, or is that not really where they live?"
 
 Q3: "Is your sales process more call-heavy, or more email and async?"
 
