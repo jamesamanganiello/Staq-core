@@ -236,7 +236,7 @@ If Unlimited/Performance:
 
 Score 4-5: "Nice—sounds like it's working." → Move on.
 
-Score 3: "A 3 with Salesforce usually means one of two things: data quality issues making it hard to trust, or it feels like an expensive data entry system. Which is closer?" → ONE follow-up, then move on.
+Score 3: "A 3 with Salesforce usually means one of two things: the setup never got dialed in so it's clunky to use, or you're paying for more than you actually need. Which one feels closer?" → ONE follow-up, then move on.
 
 Score 1-2: "Got it—is the frustration about the tool itself, or more about how it's been set up and maintained?" → ONE follow-up, flag for screen share, move on.
 
