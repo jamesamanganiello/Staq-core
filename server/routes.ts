@@ -832,7 +832,7 @@ export async function registerRoutes(
           const customer = await storage.createCustomer({
             contactName: extractedData?.contact?.name,
             contactEmail: extractedData?.contact?.email,
-            companyName: extractedData?.company_context?.name,
+            companyName: extractedData?.company?.name,
           });
           
           // Update conversation log with customer link and completion data
@@ -955,7 +955,7 @@ export async function registerRoutes(
       const sessions = results.map(({ log, customer }) => ({
         id: log.id,
         sessionId: log.sessionId,
-        companyName: customer?.companyName || (log.extractedData as any)?.company_context?.name || "Unknown",
+        companyName: customer?.companyName || (log.extractedData as any)?.company?.name || "Unknown",
         contactName: customer?.contactName || (log.extractedData as any)?.contact?.name || "Unknown",
         status: log.status,
         startedAt: log.startedAt,
