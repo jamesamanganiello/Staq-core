@@ -348,40 +348,55 @@ If SalesLoft + HubSpot Sales Hub Pro+: "You've got sequences in HubSpot Sales Hu
 ### Outreach (Sales Engagement)
 
 **First Mention Response:**
-"Outreach—are your reps using it mainly for sequences, or are you also using Kaia and the deal intelligence side?"
+"Outreach—are your reps mostly living in sequences, or are you using the broader platform stuff like Kaia or the dialer?"
 
-Why: Kaia (AI meeting assistant) and deal intelligence are premium features. Asking about them signals platform depth knowledge.
+Why: Signals you know Outreach is more than just sequences. Kaia and dialer are power features that indicate deeper adoption vs. "expensive email sequencer" syndrome.
 
-If they don't know about Kaia:
-"That's their AI meeting assistant. We'll check what's enabled on the screen share."
+**Use Case Branching:**
+- "Just sequences" or "mainly sequences" → No follow-up needed—move to satisfaction
+- "We have Kaia" or mentions call recording → "Got it—so Outreach is handling your conversation intelligence too." (Acknowledge, don't probe deeper. Flag for Gong overlap check.)
+- "We use the dialer" → "Nice—how's call volume? Is the team actually using it or do they have their own workflow?" (ONE follow-up only)
+- Unsure what features they have → "No worries—we'll dig into that on the screen share." Move to satisfaction.
 
 **Satisfaction Probes:**
 
-Prompt: "On a scale of 1-5, how's Outreach working for you? 1 being 'we just send emails from it' and 5 being 'our entire sales process runs through it.'"
+Prompt: "On a scale of 1-5, how's Outreach working for you? 1 being 'expensive email sequencer' and 5 being 'couldn't run outbound without it.'"
 
-Score 4-5: "Nice—sounds like it's well embedded." → Move on.
+Why: "Expensive email sequencer" is a real failure mode—signals you've heard this complaint before. "Couldn't run outbound without it" is the aspirational state.
 
-Score 3: "That's pretty common. Usually a 3 with Outreach means either reps have their own workarounds, or the reporting isn't giving you what you need. Which is closer?" → ONE follow-up, then move on.
+Score 4-5: "Solid—sounds like the team's bought in." → Move on. No probe.
 
-Score 1-2: "Okay—is the frustration about adoption, deliverability, or something else?" → ONE follow-up, flag for screen share, move on.
+Score 3: "A 3 with Outreach usually comes down to one of two things: adoption gaps where reps are doing their own thing, or the platform feels like overkill for what you actually need. Which is closer?" → ONE follow-up max, then move on.
+
+Score 1-2: "Got it. With Outreach, the friction usually lands on complexity, support responsiveness, or feeling locked into a contract that doesn't fit anymore. What's driving that for you?" → Capture pain point, flag for screen share, move on.
 
 **Named Failure Modes:**
-- "just sending emails from it"—not using multi-channel or triggers
-- "reps have their own workarounds"—low platform trust
-- "deliverability concerns"—email landing in spam
-- "reporting gaps"—can't tie sequence activity to outcomes
-- "too complex"—feature bloat creating adoption friction
+- "adoption gaps—reps doing their own thing instead of using sequences"
+- "expensive email sequencer" (paying for platform, only using basic sequences)
+- "steep learning curve—took forever to get ramped"
+- "support responsiveness"
+- "contract terms"
+- "HubSpot sync issues" (only if they mentioned HubSpot as CRM)
 
 **Overlap Detection:**
-If Outreach + SalesLoft: "You mentioned both Outreach and SalesLoft—using both, or did you switch?"
-If Outreach + Gong Engage: "Got it—so sequences in Outreach and Gong Engage is also in the mix? Or is Engage just for calls?"
+If Outreach + SalesLoft: "Wait—you have both Outreach and SalesLoft? How'd that happen?" (Flag as urgent redundancy)
+If Outreach + Gong (and they said Outreach has Kaia): "So you've got Gong and Kaia—are both getting used, or is one collecting dust?" (Flag for screen share)
+If Outreach + Apollo (for sequences): "You mentioned Apollo for sequences and Outreach—using both, or did you switch?"
+If Outreach + HubSpot (CRM) + HubSpot Sequences: "Are you running sequences through Outreach, or using HubSpot's native sequences too?" (Potential overlap)
+
+**Skip Logic:**
+- If Phase 4 showed "mostly inbound (>80%)" AND they have Outreach → Flag as potential mismatch: "High-cost engagement platform for a mostly inbound motion—worth exploring fit."
+- If they already said SalesLoft when asked about sales engagement → Do NOT ask about Outreach separately. The category is already covered.
+- If they already said Apollo handles their sequences → Bridge: "You mentioned Apollo for sequences—do you also have Outreach, or is Apollo covering that?"
 
 **DO NOT say:**
-- Specific pricing
-- Deliverability benchmarks or fixes
-- Sequence structure recommendations
-- Outreach vs. SalesLoft comparison recommendations
-- Feature utilization statistics
+- Utilization benchmarks (e.g., "80% adoption is healthy")
+- How to fix CRM sync issues
+- Pricing or discount intel
+- "You should switch to SalesLoft/Apollo"
+- Package tier recommendations
+- Specific field mapping advice
+- "Outreach is better/worse than SalesLoft"
 
 ---
 

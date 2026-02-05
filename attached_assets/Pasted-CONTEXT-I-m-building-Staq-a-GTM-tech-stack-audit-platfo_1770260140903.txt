@@ -1,0 +1,104 @@
+CONTEXT:
+I'm building Staq, a GTM tech stack audit platform. We have a conversational intake system powered by Claude API. The intake system already has tool intelligence modules in /server/tool-intelligence/ for ZoomInfo, Apollo, Sales Navigator, Gong, Salesforce, HubSpot, and SalesLoft.
+
+Per the STAQ_CONVERSATIONAL_INTAKE_FRAMEWORK.pdf:
+- Outreach/SalesLoft Fit Logic: Outbound ratio > 50% = High fit, ~50/50 = Medium fit, Mostly inbound = Low fit—may be overkill
+- For each tool: ask if they use it → satisfaction 1-5 → ONE tease layer follow-up max → move on
+- NEVER ask about seat counts, costs, contract details, or integration specifics during intake
+
+Per the STAQ_MVP_SPECIFICATION.pdf:
+- Keep conversation under 20 exchanges total
+- If they say "not sure," say "We'll look at that on the screen share" and move on
+
+Per the Staq Vibe coding coach.pdf:
+- Use CONTEXT → GOAL → REQUIREMENTS → TECHNICAL structure
+- Reference project files
+- No raw code dumps without proper formatting
+
+GOAL:
+Add Outreach-specific conversation intelligence so STAQ demonstrates expert knowledge without delivering diagnostic value. Outreach is a Sales Engagement Platform (same category as SalesLoft), so the module must include overlap detection with SalesLoft, Gong (if they have Kaia), Apollo (if used for sequences), and HubSpot native sequences.
+
+REQUIREMENTS:
+
+1. Create /server/tool-intelligence/outreach.js following the same structure as existing modules
+
+2. First Mention Response:
+When user mentions Outreach, respond with:
+"Outreach—are your reps mostly living in sequences, or are you using the broader platform stuff like Kaia or the dialer?"
+
+Why this works: Signals you know Outreach is more than just sequences. Kaia and dialer are power features that indicate deeper adoption vs. "expensive email sequencer" syndrome.
+
+3. Use Case Branching:
+
+| They Say | Follow-Up |
+|----------|-----------|
+| "Just sequences" or "mainly sequences" | No follow-up needed—move to satisfaction |
+| "We have Kaia" or mentions call recording | "Got it—so Outreach is handling your conversation intelligence too." (Acknowledge, don't probe deeper. Flag for Gong overlap check.) |
+| "We use the dialer" | "Nice—how's call volume? Is the team actually using it or do they have their own workflow?" (ONE follow-up only) |
+| Unsure what features they have | "No worries—we'll dig into that on the screen share." Move to satisfaction. |
+
+4. Satisfaction Question:
+"On a scale of 1-5, how's Outreach working for you? 1 being 'expensive email sequencer' and 5 being 'couldn't run outbound without it.'"
+
+Why this works: "Expensive email sequencer" is a real failure mode from user reviews—signals you've heard this complaint before. "Couldn't run outbound without it" is the aspirational state.
+
+5. Score-Based Responses:
+
+| Score | Response | Then |
+|-------|----------|------|
+| 4-5 | "Solid—sounds like the team's bought in." | Move on. No probe. |
+| 3 | "A 3 with Outreach usually comes down to one of two things: adoption gaps where reps are doing their own thing, or the platform feels like overkill for what you actually need. Which is closer?" | ONE follow-up max, then move on. |
+| 1-2 | "Got it. With Outreach, the friction usually lands on complexity, support responsiveness, or feeling locked into a contract that doesn't fit anymore. What's driving that for you?" | Capture pain point, flag for screen share, move on. |
+
+6. Named Failure Modes (safe to reference as patterns):
+- "adoption gaps—reps doing their own thing instead of using sequences"
+- "expensive email sequencer" (paying for platform, only using basic sequences)
+- "steep learning curve—took forever to get ramped"
+- "support responsiveness"
+- "contract terms"
+- "HubSpot sync issues" (only if they mentioned HubSpot as CRM)
+
+7. Overlap Detection:
+
+| If They Also Mentioned | Response |
+|------------------------|----------|
+| SalesLoft | "Wait—you have both Outreach and SalesLoft? How'd that happen?" (Flag as urgent redundancy) |
+| Gong + they said Outreach has Kaia | "So you've got Gong and Kaia—are both getting used, or is one collecting dust?" (Flag for screen share) |
+| Apollo (for sequences) | "You mentioned Apollo for sequences and Outreach—using both, or did you switch?" |
+| HubSpot (CRM) + HubSpot Sequences | "Are you running sequences through Outreach, or using HubSpot's native sequences too?" (Potential overlap) |
+
+8. Skip Logic Integration:
+- If Phase 4 showed "mostly inbound (>80%)" AND they have Outreach → Flag as potential mismatch: "High-cost engagement platform for a mostly inbound motion—worth exploring fit."
+- If they already said SalesLoft when asked about sales engagement → Do NOT ask about Outreach separately. The category is already covered.
+- If they already said Apollo handles their sequences → Bridge: "You mentioned Apollo for sequences—do you also have Outreach, or is Apollo covering that?"
+
+9. Screen Share Flags to Auto-Generate:
+- satisfaction <= 2 → "PRIORITY: Outreach dissatisfaction—deep dive on {stated_pain_point}"
+- has_kaia AND has_gong → "Duplicate conversation intelligence: Outreach Kaia + Gong"
+- has_outreach AND has_salesloft → "URGENT: Duplicate sales engagement platforms"
+- has_outreach AND mostly_inbound → "Potential mismatch: Outreach with inbound-heavy motion"
+- pain_point contains "adoption" OR "reps doing their own thing" → "Adoption audit: check sequence usage by rep"
+- pain_point contains "contract" OR "locked in" → "Procurement review: contract terms"
+- pain_point contains "support" → "Note: Support experience flagged"
+- crm = "HubSpot" AND satisfaction <= 3 → "Check HubSpot sync health—known limitation area"
+
+10. What NOT to Say:
+
+| Never Say | Why |
+|-----------|-----|
+| Utilization benchmarks (e.g., "80% adoption is healthy") | Paid value |
+| How to fix CRM sync issues | Paid value |
+| Pricing or discount intel | Paid value |
+| "You should switch to SalesLoft/Apollo" | Recommendation = paid value |
+| Package tier recommendations | Paid value |
+| Specific field mapping advice | Paid value |
+| "Outreach is better/worse than SalesLoft" | Comparison = paid value |
+
+11. Update /server/tool-intelligence/index.js to include outreach in the registry with triggers: ["outreach", "outreach.io"]
+
+TECHNICAL:
+- Node.js/Express backend
+- Follow existing module structure in /server/tool-intelligence/
+- Export as module.exports = outreachIntelligence
+- Outreach is a Sales Engagement Platform, so this module activates during Phase 5 step 5C (Sales Engagement)
+- Must check for SalesLoft mention BEFORE asking about Outreach to avoid redundancy
