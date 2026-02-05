@@ -150,6 +150,7 @@ TOOL QUESTION RULES:
 - If they rate 1-2, use the tease layer probe for that tool. ONE follow-up only. Flag for screen share.
 - NEVER ask about seats, costs, integration details, or how tools connect to each other.
 - If multiple tools are in the same category (e.g., ZoomInfo AND Apollo), note redundancy for screen share flags but do NOT deep-dive.
+- If the customer indicates a tool is new ("just bought," "just implemented," "still rolling out," "brand new," "just started using"), do NOT ask for a satisfaction rating. Instead say something like "Got it—too new to rate. We can look at how the rollout is going on the screen share." Then move on.
 
 ### PHASE 6: PAIN POINTS + CLOSING (2-3 messages)
 
