@@ -1,0 +1,48 @@
+CONTEXT:
+I'm building Staq, a GTM tech stack audit platform. The admin dashboard currently has a "Tool Insights" section showing tool mentions and satisfaction ratings inline with the Intake Sessions list. This is cluttered and hard to read. The current implementation shows individual pie charts per tool which doesn't scale well.
+
+GOAL:
+Move tool analytics to a completely separate tab in the admin dashboard with two clear, professional charts.
+
+REQUIREMENTS:
+
+1. Add tab navigation to the admin dashboard:
+   - Tab 1: "Intake Sessions" (the current list view)
+   - Tab 2: "Tool Analytics" (new)
+
+2. Tool Analytics tab contains exactly TWO charts:
+
+   CHART 1: "Tool Mention Frequency"
+   - Bar chart (horizontal or vertical)
+   - X-axis: Tool names
+   - Y-axis: Number of mentions
+   - Sorted by frequency (most mentioned first)
+   - Include all tools that have been mentioned at least once
+   - Color: Use the Staq cyan (#00B4C4) or a professional color scheme
+
+   CHART 2: "Average Satisfaction by Tool"
+   - Bar chart (horizontal or vertical, match Chart 1 style)
+   - X-axis: Tool names
+   - Y-axis: Average satisfaction rating (1-5 scale)
+   - Color-code the bars based on average score:
+     - 4.0-5.0: Green
+     - 3.0-3.9: Yellow/Orange
+     - 1.0-2.9: Red
+   - Only include tools that have at least one satisfaction rating
+   - Show the actual average number on or next to each bar
+
+3. Both charts should:
+   - Be responsive and professional looking
+   - Have clear labels and a title
+   - Use consistent styling with the rest of the admin dashboard
+
+4. Remove the current inline "Tool Insights" section from the Intake Sessions view—all tool data now lives in the Tool Analytics tab
+
+5. Tab state should persist during the session (if I click to Tool Analytics, it stays there until I click back)
+
+TECHNICAL:
+- Node.js/Express backend, SQLite database
+- Use Chart.js for the charts (already available or easy to add)
+- Pull data from completed intakes only
+- Calculate average satisfaction server-side and pass to frontend
+- Keep the tab navigation simple—no need for routing, just show/hide the relevant content

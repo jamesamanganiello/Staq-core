@@ -1101,13 +1101,26 @@ export async function registerRoutes(
         }
       }
       
-      // Convert to sorted array
+      // Convert to sorted array with average satisfaction calculated
       const insights = Object.entries(toolData)
-        .map(([name, data]) => ({
-          name,
-          mentions: data.mentions,
-          ratings: data.ratings,
-        }))
+        .map(([name, data]) => {
+          // Calculate average satisfaction
+          let totalRatings = 0;
+          let weightedSum = 0;
+          for (const [rating, count] of Object.entries(data.ratings)) {
+            totalRatings += count;
+            weightedSum += parseInt(rating) * count;
+          }
+          const avgSatisfaction = totalRatings > 0 ? weightedSum / totalRatings : null;
+          
+          return {
+            name,
+            mentions: data.mentions,
+            ratings: data.ratings,
+            avgSatisfaction: avgSatisfaction ? Math.round(avgSatisfaction * 10) / 10 : null,
+            totalRatings,
+          };
+        })
         .sort((a, b) => b.mentions - a.mentions);
       
       res.json({ insights });
