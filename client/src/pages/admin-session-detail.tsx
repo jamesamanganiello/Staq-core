@@ -103,7 +103,7 @@ export default function AdminSessionDetail() {
   }
 
   const { log, customer, messages } = data;
-  const companyName = customer?.companyName || (log.extractedData?.company_context?.name) || "Unknown Company";
+  const companyName = customer?.companyName || (log.extractedData?.company?.name) || "Unknown Company";
   const contactName = customer?.contactName || (log.extractedData?.contact?.name) || "Unknown Contact";
 
   const getStatusBadge = (status: string) => {
