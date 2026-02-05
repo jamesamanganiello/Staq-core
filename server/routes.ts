@@ -1028,5 +1028,94 @@ export async function registerRoutes(
     }
   });
 
+  // Get tool insights (admin)
+  app.get("/api/admin/tool-insights", requireAdmin, async (req, res) => {
+    try {
+      const results = await storage.getAllConversationsWithCustomers();
+      
+      // Aggregate tool data from completed intakes only
+      const toolData: Record<string, { mentions: number; ratings: Record<number, number> }> = {};
+      
+      for (const { log } of results) {
+        if (log.status !== "completed" || !log.extractedData) continue;
+        
+        const data = log.extractedData as any;
+        const tools = data?.tools;
+        if (!tools) continue;
+        
+        // Process each tool category
+        const toolCategories = [
+          { key: "crm", nameField: "name" },
+          { key: "conversation_intelligence", nameField: "name" },
+          { key: "sales_engagement", nameField: "name" },
+          { key: "data_enrichment", nameField: "name" },
+        ];
+        
+        for (const category of toolCategories) {
+          const tool = tools[category.key];
+          if (tool && tool.name && tool.name.trim()) {
+            const toolName = tool.name.trim();
+            if (!toolData[toolName]) {
+              toolData[toolName] = { mentions: 0, ratings: {} };
+            }
+            toolData[toolName].mentions++;
+            
+            if (tool.satisfaction && typeof tool.satisfaction === "number") {
+              const rating = Math.min(5, Math.max(1, Math.round(tool.satisfaction)));
+              toolData[toolName].ratings[rating] = (toolData[toolName].ratings[rating] || 0) + 1;
+            }
+          }
+        }
+        
+        // Handle Sales Navigator separately (has_it boolean)
+        if (tools.sales_navigator?.has_it) {
+          const toolName = "Sales Navigator";
+          if (!toolData[toolName]) {
+            toolData[toolName] = { mentions: 0, ratings: {} };
+          }
+          toolData[toolName].mentions++;
+          
+          if (tools.sales_navigator.satisfaction && typeof tools.sales_navigator.satisfaction === "number") {
+            const rating = Math.min(5, Math.max(1, Math.round(tools.sales_navigator.satisfaction)));
+            toolData[toolName].ratings[rating] = (toolData[toolName].ratings[rating] || 0) + 1;
+          }
+        }
+        
+        // Handle other_tools array
+        if (Array.isArray(tools.other_tools)) {
+          for (const otherTool of tools.other_tools) {
+            if (typeof otherTool === "string" && otherTool.trim()) {
+              const toolName = otherTool.trim();
+              if (!toolData[toolName]) {
+                toolData[toolName] = { mentions: 0, ratings: {} };
+              }
+              toolData[toolName].mentions++;
+            } else if (otherTool?.name && otherTool.name.trim()) {
+              const toolName = otherTool.name.trim();
+              if (!toolData[toolName]) {
+                toolData[toolName] = { mentions: 0, ratings: {} };
+              }
+              toolData[toolName].mentions++;
+            }
+          }
+        }
+      }
+      
+      // Convert to sorted array
+      const insights = Object.entries(toolData)
+        .map(([name, data]) => ({
+          name,
+          mentions: data.mentions,
+          ratings: data.ratings,
+        }))
+        .sort((a, b) => b.mentions - a.mentions);
+      
+      res.json({ insights });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to fetch tool insights" });
+    }
+  });
+
   return httpServer;
 }
