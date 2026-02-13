@@ -16,6 +16,7 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("");
   const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: historyData, isLoading, error } = useChatHistory(sessionId);
   const sendMessageMutation = useSendMessage(sessionId);
@@ -33,6 +34,9 @@ export default function ChatPage() {
   useEffect(() => {
     if (!sendMessageMutation.isPending && optimisticMessage) {
       setOptimisticMessage(null);
+    }
+    if (!sendMessageMutation.isPending) {
+      inputRef.current?.focus();
     }
   }, [sendMessageMutation.isPending, optimisticMessage]);
 
@@ -177,11 +181,11 @@ export default function ChatPage() {
               className="relative flex items-center gap-3"
             >
               <input
+                ref={inputRef}
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your answer..."
-                disabled={sendMessageMutation.isPending}
                 className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:border-[#00B4C4] focus:ring-2 focus:ring-[#00B4C4]/20 transition-brand placeholder:text-gray-400"
                 data-testid="input-chat-message"
                 autoFocus
