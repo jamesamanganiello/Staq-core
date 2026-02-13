@@ -14,6 +14,7 @@ export default function ChatPage() {
   const sessionId = params?.sessionId || "";
 
   const [inputValue, setInputValue] = useState("");
+  const [optimisticMessage, setOptimisticMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: historyData, isLoading, error } = useChatHistory(sessionId);
@@ -27,7 +28,13 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [historyData?.messages, sendMessageMutation.isPending]);
+  }, [historyData?.messages, sendMessageMutation.isPending, optimisticMessage]);
+
+  useEffect(() => {
+    if (!sendMessageMutation.isPending && optimisticMessage) {
+      setOptimisticMessage(null);
+    }
+  }, [sendMessageMutation.isPending, optimisticMessage]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -39,10 +46,12 @@ export default function ChatPage() {
 
     const message = inputValue;
     setInputValue("");
+    setOptimisticMessage(message);
 
     try {
       await sendMessageMutation.mutateAsync({ message });
     } catch (err) {
+      setOptimisticMessage(null);
       setInputValue(message);
     }
   };
@@ -131,6 +140,13 @@ export default function ChatPage() {
                   content={msg.content} 
                 />
               ))}
+              {optimisticMessage && (
+                <ChatMessage
+                  key="optimistic"
+                  role="user"
+                  content={optimisticMessage}
+                />
+              )}
             </AnimatePresence>
             
             {sendMessageMutation.isPending && (
