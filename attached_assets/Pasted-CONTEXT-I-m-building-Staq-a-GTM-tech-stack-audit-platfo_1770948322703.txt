@@ -1,0 +1,110 @@
+CONTEXT:
+I'm building Staq, a GTM tech stack audit platform. We have a conversational intake system powered by Claude API. The intake system already has tool intelligence modules in /server/tool-intelligence/ for ZoomInfo, Apollo, Sales Navigator, Gong, Salesforce, HubSpot, SalesLoft, Outreach, and Seamless.AI.
+
+Per the STAQ_CONVERSATIONAL_INTAKE_FRAMEWORK.pdf:
+- Data enrichment fit logic: Mostly outbound = High fit, 50/50 = Medium fit, Mostly inbound = Low fit
+- For each tool: ask if they use it → satisfaction 1-5 → ONE tease layer follow-up max → move on
+- NEVER ask about seat counts, costs, contract details, or integration specifics during intake
+
+Per the STAQ_MVP_SPECIFICATION.pdf:
+- Keep conversation under 20 exchanges total
+- If they say "not sure," say "We'll look at that on the screen share" and move on
+
+Per the Staq Vibe coding coach.pdf:
+- Use CONTEXT → GOAL → REQUIREMENTS → TECHNICAL structure
+- Reference project files
+- No raw code dumps without proper formatting
+
+GOAL:
+Add Clay-specific conversation intelligence so STAQ demonstrates expert knowledge without delivering diagnostic value. Clay is unique—it's a credit-based data enrichment AND workflow automation platform that aggregates 150+ providers. It competes with ZoomInfo/Apollo on data, but also has native sequencing that competes with Outreach/SalesLoft. The module must handle these overlaps intelligently.
+
+REQUIREMENTS:
+
+1. Create /server/tool-intelligence/clay.js following the same structure as existing modules
+
+2. First Mention Response:
+When user mentions Clay, respond with:
+"Clay—nice. Are you using it mainly for enrichment, or are you deep into the workflows and Claygent stuff too?"
+
+Why this works: Signals you know Clay is more than just a data tool. "Claygent" is insider terminology that casual users won't know. Distinguishes basic users (enrichment only) from power users (workflows, AI agents).
+
+3. Use Case Branching:
+
+| They Say | Follow-Up |
+|----------|-----------|
+| "Just enrichment" or "mainly for data" | No follow-up needed—move to satisfaction |
+| "We use Claygent" or mentions AI research | "Got it—so you're using the AI agents for prospecting research." (Acknowledge, move to satisfaction) |
+| "We use the sequencer" or "sending emails through Clay" | "Oh, so Clay's handling your outbound too—not using Outreach or SalesLoft?" (Clarifies overlap, ONE follow-up) |
+| "We use waterfall enrichment" | "Smart—stacking providers for better coverage." (Acknowledge expertise, move to satisfaction) |
+| Unsure what features they use | "No worries—we'll dig into that on the screen share." Move to satisfaction. |
+
+4. Satisfaction Question:
+"On a scale of 1-5, how's Clay working for you? 1 being 'burning credits trying to figure it out' and 5 being 'replaced five tools with one.'"
+
+Why this works: "Burning credits" is the #1 complaint (42% of user complaints). "Replaced five tools" is the aspirational outcome Clay markets. Both are real user language.
+
+5. Score-Based Responses:
+
+| Score | Response | Then |
+|-------|----------|------|
+| 4-5 | "Nice—sounds like you've got the workflows dialed in." | Move on. No probe. |
+| 3 | "A 3 with Clay usually means one of two things: the learning curve hasn't clicked yet, or the credits are burning faster than expected. Which is closer?" | ONE follow-up max, then move on. |
+| 1-2 | "Got it. With Clay, the friction usually comes down to complexity—it's built for GTM engineers, not everyone—or the credit model feeling unpredictable. What's the main pain?" | Capture pain point, flag for screen share, move on. |
+
+6. Named Failure Modes (safe to reference as patterns):
+- "burning credits during the learning phase"
+- "built for GTM engineers, not frontline sellers"
+- "expensive spreadsheet" (paying for platform, only using basic enrichment)
+- "credit model feels unpredictable"
+- "CRM integration requires the Pro tier"
+- "steep learning curve—took weeks to figure out"
+
+7. Overlap Detection:
+
+| If They Also Mentioned | Response |
+|------------------------|----------|
+| ZoomInfo | "You mentioned ZoomInfo and Clay—is Clay enriching on top of ZoomInfo, or did you consolidate?" |
+| Apollo | "You mentioned Apollo and Clay—using both, or did Clay replace Apollo for enrichment?" |
+| Seamless.AI or Cognism | "You've got [tool] and Clay—is Clay your primary enrichment layer, or are you using both?" |
+| Outreach or SalesLoft | "Are you running sequences through Clay, or is [tool] handling outbound separately?" |
+| Multiple data tools + Clay | Flag: "Multiple enrichment tools in the stack—worth looking at overlap vs. intentional waterfall" |
+
+8. Skip Logic Integration:
+- If Phase 4 showed "mostly inbound (>80%)" AND they have Clay → Flag as potential mismatch: "Clay is heavy for a mostly inbound motion—worth exploring if the investment matches the use case."
+- If they already mentioned Apollo or ZoomInfo as their primary enrichment when asked about data tools → Still ask if they also have Clay, since Clay often layers on top of other tools
+- If they said Clay handles sequences → Do NOT ask about Outreach/SalesLoft as if they're missing coverage. Bridge: "Since Clay's handling sequences, we can skip the sales engagement question."
+
+9. Screen Share Flags to Auto-Generate:
+- satisfaction <= 2 → "PRIORITY: Clay dissatisfaction—deep dive on {stated_pain_point}"
+- has_clay AND has_zoominfo → "Review Clay + ZoomInfo stack—consolidation opportunity or intentional?"
+- has_clay AND has_apollo → "Review Clay + Apollo stack—potential redundancy"
+- has_clay AND (has_outreach OR has_salesloft) AND uses_clay_sequencer → "Duplicate sequencing: Clay Sequencer + [tool]"
+- has_clay AND mostly_inbound → "Potential mismatch: Clay with inbound-heavy motion"
+- pain_point contains "credits" OR "expensive" OR "cost" → "Credit utilization review—may be on wrong tier or underutilizing"
+- pain_point contains "learning curve" OR "complex" OR "confusing" → "Adoption assessment—check if team is trained, may need simpler tool"
+- pain_point contains "CRM" OR "integration" → "Check CRM sync setup and tier (Pro required for CRM)"
+
+10. What NOT to Say:
+
+| Never Say | Why |
+|-----------|-----|
+| Credit consumption benchmarks | Paid value |
+| How to optimize waterfall ordering | Paid value |
+| Tier recommendations (Explorer vs. Pro vs. Enterprise) | Paid value |
+| How to set up Claygent prompts | Paid value |
+| "Clay is better/worse than ZoomInfo/Apollo" | Comparison = paid value |
+| ROI calculations or cost-per-enrichment math | Paid value |
+| How to fix CRM sync issues | Paid value |
+
+11. Update /server/tool-intelligence/index.js to include clay in the registry with triggers: ["clay", "clay.com", "claygent"]
+
+12. Update the Data Enrichment category question in Phase 5 to include Clay:
+Current: "What about data and enrichment tools? ZoomInfo, Apollo, Seamless AI, Cognism, anything like that for contact data and company intel?"
+New: "What about data and enrichment tools? ZoomInfo, Apollo, Clay, Seamless, Cognism—anything like that?"
+
+TECHNICAL:
+- Node.js/Express backend
+- Follow existing module structure in /server/tool-intelligence/
+- Export as module.exports = clayIntelligence
+- Clay is a Data Enrichment tool, so this module activates during Phase 5 step 5E (Data & Enrichment)
+- Must check for other data tools AND sales engagement tools due to Clay's overlap with both categories

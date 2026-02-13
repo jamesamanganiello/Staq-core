@@ -135,7 +135,7 @@ If yes → Satisfaction 1-5 → ONE tease layer follow-up (see Knowledge Base) �
 If no → Move on
 
 **5E: Data & Enrichment**
-"What about data and enrichment tools? ZoomInfo, Apollo, Seamless AI, Cognism, anything like that for contact data and company intel?"
+"What about data and enrichment tools? ZoomInfo, Apollo, Clay, Seamless, Cognism—anything like that?"
 
 If yes → Satisfaction 1-5 → ONE tease layer follow-up (see Knowledge Base) → Move on
 If no → Move on
@@ -568,6 +568,7 @@ If Seamless + Apollo: "You mentioned Apollo and Seamless—is Apollo for data, e
 | Team size = 1-2 | Team composition question |
 | No CRM | All tool integration questions. Note CRM as priority finding. |
 | Mostly inbound (>80%) | Deep questions about outbound tools. But still ask if they use them. |
+| Clay handles sequences | Do NOT ask about Outreach/SalesLoft as missing coverage. Bridge: "Since Clay's handling sequences, we can skip the sales engagement question." |
 | Mostly email/async sales | Deep questions about Gong fit. But still ask if they use it. |
 | They don't use a tool | Satisfaction rating for that tool |
 | Already at message 17+ | Skip remaining tool categories, go to Phase 6 |
@@ -595,21 +596,29 @@ If Seamless + Apollo: "You mentioned Apollo and Seamless—is Apollo for data, e
 | Outbound ratio ~50/50 | Medium fit |
 | Mostly inbound | Low fit—may be overkill |
 
-### ZoomInfo/Apollo/Seamless (Data & Enrichment)
+### ZoomInfo/Apollo/Seamless/Clay (Data & Enrichment)
 | Signal | Fit |
 |--------|-----|
 | Mostly outbound | High fit |
 | 50/50 | Medium fit |
 | Mostly inbound | Low fit—question the spend |
 | Using multiple data tools | Redundancy flag |
+| Clay + mostly inbound | Potential mismatch—Clay is heavy for inbound-dominant motion |
 
 ## FLAGS TO GENERATE (For Screen Share Prep)
 
 Automatically flag these patterns:
 - Tool-motion mismatch: e.g., "80% inbound but paying for ZoomInfo"
+- Clay + mostly inbound: "Potential mismatch: Clay with inbound-heavy motion"
 - Satisfaction red flags: Any tool rated 1-2
 - Missing coverage: High outbound team with no sales engagement platform
 - Redundancy: Multiple tools in same category
+- Clay + ZoomInfo: "Review Clay + ZoomInfo stack—consolidation opportunity or intentional?"
+- Clay + Apollo: "Review Clay + Apollo stack—potential redundancy"
+- Clay + (Outreach or SalesLoft) + uses Clay sequencer: "Duplicate sequencing: Clay Sequencer + [tool]"
+- Clay pain contains "credits" or "expensive" or "cost": "Credit utilization review—may be on wrong tier or underutilizing"
+- Clay pain contains "learning curve" or "complex" or "confusing": "Adoption assessment—check if team is trained, may need simpler tool"
+- Clay pain contains "CRM" or "integration": "Check CRM sync setup and tier (Pro required for CRM)"
 - Operational risk: No clear ops owner—expect data/integration issues
 - Adoption risk: CRM satisfaction 1-2 undermines entire stack value
 

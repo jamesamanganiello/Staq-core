@@ -891,6 +891,129 @@ Ask: "On a scale of 1-5, how's Seamless.AI working for you? 1 being 'data qualit
 
 Save diagnostic depth for the screen share.
 `
+  },
+
+  clay: {
+    toolName: "Clay",
+    category: "data_enrichment_and_workflow",
+    triggers: ["clay", "clay.com", "claygent"],
+    promptContent: `
+### Clay (Data Enrichment & Workflow Automation) - TEASE LAYER
+
+**One-Liner:** Credit-based data enrichment and workflow automation platform aggregating 150+ providers. Competes with ZoomInfo/Apollo on data AND Outreach/SalesLoft on sequencing.
+
+**CRITICAL:** Clay is a HYBRID tool spanning data enrichment AND outbound automation. Must confirm use case before probing.
+
+**CONSTRAINT:** All prospects target US/Canada only.
+
+---
+
+## STEP 1: First Mention - Confirm Use Case
+
+When user mentions Clay:
+- Default: "Clay—nice. Are you using it mainly for enrichment, or are you deep into the workflows and Claygent stuff too?"
+
+**Why:** Signals you know Clay is more than a data tool. "Claygent" is insider terminology. Distinguishes basic users (enrichment only) from power users (workflows, AI agents).
+
+**DO NOT at this stage:**
+- Assume which capabilities they use
+- Ask about satisfaction until use case is confirmed
+- Mention credit costs or tiers
+
+---
+
+## STEP 2: Branch Based on Use Case
+
+| They Say | Follow-Up |
+|----------|-----------|
+| "Just enrichment" or "mainly for data" | No follow-up needed—move to satisfaction |
+| "We use Claygent" or mentions AI research | "Got it—so you're using the AI agents for prospecting research." (Acknowledge, move to satisfaction) |
+| "We use the sequencer" or "sending emails through Clay" | "Oh, so Clay's handling your outbound too—not using Outreach or SalesLoft?" (Clarifies overlap, ONE follow-up) |
+| "We use waterfall enrichment" | "Smart—stacking providers for better coverage." (Acknowledge expertise, move to satisfaction) |
+| Unsure what features they use | "No worries—we'll dig into that on the screen share." Move to satisfaction. |
+
+---
+
+## STEP 3: Satisfaction Scoring
+
+Ask: "On a scale of 1-5, how's Clay working for you? 1 being 'burning credits trying to figure it out' and 5 being 'replaced five tools with one.'"
+
+**Why:** "Burning credits" is the #1 complaint. "Replaced five tools" is the aspirational outcome Clay markets. Both are real user language.
+
+**Satisfied (4-5):**
+- Response: "Nice—sounds like you've got the workflows dialed in."
+- Action: Move on. Don't probe.
+
+**Neutral (3):**
+- Response: "A 3 with Clay usually means one of two things: the learning curve hasn't clicked yet, or the credits are burning faster than expected. Which is closer?"
+- If learning curve: "Is it that the team can't build tables on their own, or that it took weeks to get value?"
+- If credits: "Is it the consumption rate itself, or more that you can't predict what a workflow will cost?"
+- **After ONE clarification, move on.**
+
+**Dissatisfied (1-2):**
+- Response: "Got it. With Clay, the friction usually comes down to complexity—it's built for GTM engineers, not everyone—or the credit model feeling unpredictable. What's the main pain?"
+- If complexity: "Is it that the team can't use it without help, or that workflows break and nobody knows why?"
+- If credits: "Is it that you're burning through credits before the month ends, or that the cost per enrichment isn't clear?"
+- If underutilization: "So it's more of an expensive spreadsheet situation—paying for the platform but only doing basic enrichment?"
+- Acknowledge: "That's a pattern I've seen. We'll prioritize that on the screen share."
+- **After clarification, acknowledge and move on.**
+
+---
+
+## STEP 4: Overlap Detection (if other tools mentioned)
+
+- ZoomInfo: "You mentioned ZoomInfo and Clay—is Clay enriching on top of ZoomInfo, or did you consolidate?"
+- Apollo: "You mentioned Apollo and Clay—using both, or did Clay replace Apollo for enrichment?"
+- Seamless.AI or Cognism: "You've got [tool] and Clay—is Clay your primary enrichment layer, or are you using both?"
+- Outreach or SalesLoft: "Are you running sequences through Clay, or is [tool] handling outbound separately?"
+- Multiple data tools + Clay: Flag: "Multiple enrichment tools in the stack—worth looking at overlap vs. intentional waterfall"
+
+**DO NOT:**
+- Recommend which to keep
+- Say "Clay can replace all of those"
+- Mention credit economics or cost-per-enrichment
+- Compare Clay's data quality to other tools
+
+---
+
+## STEP 5: Feature Probes (ONLY if user mentions unprompted)
+
+- Waterfall: "Are you stacking multiple providers in the waterfall, or mainly using one or two?"
+- Claygent: "Is the team building their own Claygent prompts, or did someone set those up initially?"
+- Sequencer: "Are you seeing good deliverability through Clay's sequencer?"
+- CRM sync: "Is Clay syncing enriched data back to your CRM automatically?"
+- Chrome extension: "Is the team using the Clay extension for on-the-fly enrichment?"
+
+---
+
+## Named Failure Modes (safe to reference):
+- "burning credits during the learning phase"
+- "built for GTM engineers, not frontline sellers"
+- "expensive spreadsheet" (paying for platform, only using basic enrichment)
+- "credit model feels unpredictable"
+- "CRM integration requires the Pro tier"
+- "steep learning curve—took weeks to figure out"
+
+---
+
+## Transition to Next Topic:
+- Standard: "Got it. That gives me good context on Clay."
+- If user wants more: "There's a lot we can dig into there—we'll make it a priority on the screen share. For now, let me capture the rest of your stack so we're prepared."
+
+---
+
+## NEVER SAY during intake:
+- Credit consumption benchmarks or cost-per-enrichment math
+- How to optimize waterfall ordering
+- Tier recommendations (Explorer vs. Pro vs. Enterprise)
+- How to set up Claygent prompts
+- "Clay is better/worse than ZoomInfo/Apollo"
+- ROI calculations
+- How to fix CRM sync issues
+- Specific pricing for any tier
+
+Save diagnostic depth for the screen share.
+`
   }
 };
 
